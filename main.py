@@ -3,8 +3,6 @@ import discord
 import os
 from dotenv import load_dotenv
 
-import commands
-
 
 class MyClient(discord.Client):
     async def on_ready(self):
@@ -24,6 +22,6 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 intents = discord.Intents.default()
 intents.message_content = True
 
-client = MyClient(intents=intents, command_prefix='!', help_command=None, tree_cls=commands.MyCommandTree)
-
-client.run("TOKEN")
+client = MyClient(intents=intents)
+print(TOKEN)
+client.run(TOKEN)
