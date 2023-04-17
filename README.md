@@ -6,6 +6,7 @@ Get the bot for your server [here](https://discord.com/api/oauth2/authorize?clie
 Plans:
  - Create custom decorators for commands
  - Setup DB to keep track of guild data
+ - Create pipeline for deployment
 
 
 Future:
