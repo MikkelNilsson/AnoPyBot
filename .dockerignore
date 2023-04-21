@@ -3,3 +3,4 @@ venv
 README.md
 .vscode
 logs
+.gitignore

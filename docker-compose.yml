@@ -1,6 +1,6 @@
 services:
   bot:
-    image: AnoPyBot:runtime
+    image: ano-py-bot:runtime
     build: .
     volumes:
-      - ./logs:/logs
+      - ./logs:/app/logs
