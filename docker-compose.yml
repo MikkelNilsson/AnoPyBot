@@ -2,5 +2,7 @@ services:
   bot:
     image: ano-py-bot:runtime
     build: .
+    environment:
+      - PyBotToken=${PyBotToken}
     volumes:
       - ./logs:/app/logs
