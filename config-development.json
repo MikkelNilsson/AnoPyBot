@@ -1,6 +1,6 @@
 {
     "discord": {
-        "token": "MTA2MjA0Mjc5Njg3MTEzNTI4Mg.Gsg97z.uGSe0cB5DFrVou0V631aD-TRhKE7zvTeE-tkwo"
+        "replay-messages": "true"
     },
     "logging": {
         "level": "info"

@@ -2,6 +2,7 @@ import sys
 import json
 import logging
 import discord
+import os
 from main import MyClient
 
 
@@ -47,6 +48,7 @@ def config():
 
     client = MyClient(intents=intents)
     client.config = load_config()
+    client.config["discord"]["token"] = os.environ["PyBotToken"]
     configLog(client)
 
     return client
