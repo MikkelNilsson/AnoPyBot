@@ -3,10 +3,10 @@ import json
 import logging
 import discord
 import os
-from main import MyClient
+from main import BotClient
 
 
-def configLog(client: MyClient):
+def configLog(client: BotClient):
     logger = logging.getLogger("discord")
     logger.setLevel(logging.INFO)
     logging.getLogger("discord.http").setLevel(logging.INFO)
@@ -46,9 +46,15 @@ def config():
     intents = discord.Intents.default()
     intents.message_content = True
 
-    client = MyClient(intents=intents)
+    client = BotClient(intents=intents)
     client.config = load_config()
-    client.config["discord"]["token"] = os.environ["PyBotToken"]
     configLog(client)
+    try:
+        if "discord" not in client.config:
+            client.config["discord"] = {}
+        client.config["discord"]["token"] = os.environ["PyBotToken"]
+    except KeyError:
+        client.logger.error("No token found in environment variables")
+        exit(1)
 
     return client

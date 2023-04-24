@@ -2,13 +2,19 @@ import discord
 import config
 import logging
 import logging.handlers
+import commands
 
 
-class MyClient(discord.Client):
+class BotClient(discord.Client):
+    client = None
+
     def __init__(self, intents: discord.Intents):
+        if BotClient.client is not None:
+            raise Exception("Client already exists")
         self.config = None
         self.logger: logging.Logger = None
         super().__init__(intents=intents)
+        BotClient.client = self
 
     async def on_ready(self):
         self.logger.info(f"Logged on as {self.user}!")
@@ -16,13 +22,17 @@ class MyClient(discord.Client):
     async def on_message(self, message: discord.Message):
         if message.author.bot:
             return
-        self.logger.info(
-            f"{message.guild.name}/{message.channel.name} - {message.author}: {message.content}"
-        )
-
-        await message.channel.send("Hello World!")
+        if (
+            "replay-messages" in self.config["discord"]
+            and self.config["discord"]["replay-messages"] == "true"
+        ):
+            self.logger.info(
+                f"{message.guild.name}/{message.channel.name} - {message.author}: {message.content}"
+            )
+        await commands.exec(message)
 
 
 if __name__ == "__main__":
     client = config.config()
+    commands.Handler(client.logger)
     client.run(client.config["discord"]["token"], log_handler=None)
