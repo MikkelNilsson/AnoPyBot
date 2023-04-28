@@ -1,11 +1,11 @@
-import commands
+from commands import permissions, command
 
 
-@commands.command("random", keep_args=False, aliases=["rand"])
+@command("random", keep_args=False, aliases=["rand"])
 async def random_command(msg):
     await msg.reply("Hello World!")
 
 
-@commands.command("rando", keep_args=True, aliases=["ran"])
+@command("rando", keep_args=True, aliases=["ran"])
 async def random_command(msg, rest):
     await msg.reply("Hello World!" + " " + rest)

@@ -10,5 +10,6 @@
         "owners": [
             "215044487871725573"
         ]
-    }
+    },
+    "connection-string": "postgresql://{user}:{password}@db:5432/{database}"
 }

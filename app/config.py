@@ -32,23 +32,39 @@ def configLog(client: BotClient):
 
 
 def load_config():
+    # load production config
     if len(sys.argv) > 1 and sys.argv[1].lower() == "prod":
         print("Loading production config")
-        with open("config.json", "r") as f:
+        with open("./config/config.json", "r") as f:
             return json.load(f)
+    # load development config
     else:
         print("Loading development config")
-        with open("config-development.json", "r") as f:
+        with open("./config/config-development.json", "r") as f:
             return json.load(f)
 
+def setup_db():
+    
+    
 
 def config():
+    # intents for discord
     intents = discord.Intents.default()
     intents.message_content = True
 
+    # create client
     client = BotClient(intents=intents)
+    # add config to the client
     client.config = load_config()
+    client.config["connection-string"] = client.config["connection-string"].format(
+        user=os.environ["POSTGRES_USER"],
+        password=os.environ["POSTGRES_PASSWORD"],
+        database=os.environ["POSTGRES_DB"],
+    )
+    # configure logging
     configLog(client)
+
+    # get token from environment variables
     try:
         if "discord" not in client.config:
             client.config["discord"] = {}

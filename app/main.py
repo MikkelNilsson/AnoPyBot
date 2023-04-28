@@ -7,6 +7,7 @@ import commands
 
 class BotClient(discord.Client):
     client = None
+    db_client = None
 
     def __init__(self, intents: discord.Intents):
         if BotClient.client is not None:
