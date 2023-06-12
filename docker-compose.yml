@@ -9,9 +9,9 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
     volumes:
       - ./logs:/app/logs
-  
+
   db:
-    image: postgres:bullseye
+    image: postgres:15-bullseye
     restart: always
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
