@@ -1,8 +1,8 @@
 import discord
 import config
+import commands
 import logging
 import logging.handlers
-import commands
 
 
 class BotClient(discord.Client):

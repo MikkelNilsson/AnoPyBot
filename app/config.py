@@ -3,6 +3,7 @@ import json
 import logging
 import discord
 import os
+from pathlib import Path
 from main import BotClient
 
 
@@ -32,20 +33,18 @@ def configLog(client: BotClient):
 
 
 def load_config():
+    prefix = str(Path(__file__).parent)
     # load production config
     if len(sys.argv) > 1 and sys.argv[1].lower() == "prod":
         print("Loading production config")
-        with open("./config/config.json", "r") as f:
+        with open(prefix + "/config/config.json", "r") as f:
             return json.load(f)
     # load development config
     else:
         print("Loading development config")
-        with open("./config/config-development.json", "r") as f:
+        with open(prefix + "/config/config-development.json", "r") as f:
             return json.load(f)
 
-def setup_db():
-    
-    
 
 def config():
     # intents for discord
@@ -60,6 +59,7 @@ def config():
         user=os.environ["POSTGRES_USER"],
         password=os.environ["POSTGRES_PASSWORD"],
         database=os.environ["POSTGRES_DB"],
+        port=os.environ["POSTGRES_PORT"],
     )
     # configure logging
     configLog(client)
