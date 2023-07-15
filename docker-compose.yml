@@ -1,8 +1,27 @@
 services:
   bot:
     image: ano-py-bot:runtime
-    build: .
+    build: ./app
+    command: bash -c "alembic upgrade head && python main.py"
     environment:
-      - PyBotToken=${PyBotToken}
+      - PYBOTTOKEN=${PYBOTTOKEN}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+    depends_on:
+      - db
     volumes:
       - ./logs:/app/logs
+
+  db:
+    image: postgres:15-bullseye
+    restart: always
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    ports:
+      - 6543:${POSTGRES_PORT}
+    volumes:
+      - ./db-data:/var/lib/postgresql/data

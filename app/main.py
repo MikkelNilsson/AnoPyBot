@@ -1,23 +1,22 @@
 import discord
-import config
+from config import config_startup
+import commands
 import logging
 import logging.handlers
-import commands
 
 
 class BotClient(discord.Client):
-    client = None
-
     def __init__(self, intents: discord.Intents):
-        if BotClient.client is not None:
-            raise Exception("Client already exists")
         self.config = None
         self.logger: logging.Logger = None
         super().__init__(intents=intents)
-        BotClient.client = self
 
     async def on_ready(self):
         self.logger.info(f"Logged on as {self.user}!")
+        self.logger.info(
+            "Serving the following guilds: "
+            + ", ".join([guild.name for guild in self.guilds])
+        )
 
     async def on_message(self, message: discord.Message):
         if message.author.bot:
@@ -33,6 +32,13 @@ class BotClient(discord.Client):
 
 
 if __name__ == "__main__":
-    client = config.config()
+    # intents for discord
+    intents = discord.Intents.default()
+    intents.message_content = True
+
+    # create client
+    client = BotClient(intents=intents)
+    config_startup(client)
+
     commands.Handler(client.logger)
     client.run(client.config["discord"]["token"], log_handler=None)

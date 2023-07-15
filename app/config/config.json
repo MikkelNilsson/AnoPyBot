@@ -1,6 +1,6 @@
 {
     "discord": {
-        "replay-messages": "false"
+        "replay-messages": "true"
     },
     "logging": {
         "level": "info"
@@ -10,5 +10,6 @@
         "owners": [
             "215044487871725573"
         ]
-    }
+    },
+    "connection-string": "postgresql+psycopg2://{user}:{password}@db:{port}/{database}"
 }

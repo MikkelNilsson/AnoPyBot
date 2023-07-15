@@ -1,12 +1,12 @@
 import sys
 import json
 import logging
-import discord
 import os
-from main import BotClient
+from pathlib import Path
+import crud
 
 
-def configLog(client: BotClient):
+def configLog(client):
     logger = logging.getLogger("discord")
     logger.setLevel(logging.INFO)
     logging.getLogger("discord.http").setLevel(logging.INFO)
@@ -32,29 +32,38 @@ def configLog(client: BotClient):
 
 
 def load_config():
+    prefix = str(Path(__file__).parent)
+    # load production config
     if len(sys.argv) > 1 and sys.argv[1].lower() == "prod":
         print("Loading production config")
-        with open("config.json", "r") as f:
+        with open(prefix + "/config/config.json", "r") as f:
             return json.load(f)
+    # load development config
     else:
         print("Loading development config")
-        with open("config-development.json", "r") as f:
+        with open(prefix + "/config/config-development.json", "r") as f:
             return json.load(f)
 
 
-def config():
-    intents = discord.Intents.default()
-    intents.message_content = True
-
-    client = BotClient(intents=intents)
+def config_startup(client):
+    # add config to the client
     client.config = load_config()
+    client.config["connection-string"] = client.config["connection-string"].format(
+        user=os.environ["POSTGRES_USER"],
+        password=os.environ["POSTGRES_PASSWORD"],
+        database=os.environ["POSTGRES_DB"],
+        port=os.environ["POSTGRES_PORT"],
+    )
+    crud.setup_database(client.config["connection-string"])
+
+    # configure logging
     configLog(client)
+
+    # get token from environment variables
     try:
         if "discord" not in client.config:
             client.config["discord"] = {}
-        client.config["discord"]["token"] = os.environ["PyBotToken"]
+        client.config["discord"]["token"] = os.environ["PYBOTTOKEN"]
     except KeyError:
         client.logger.error("No token found in environment variables")
         exit(1)
-
-    return client
