@@ -1,13 +1,12 @@
 import sys
 import json
 import logging
-import discord
 import os
 from pathlib import Path
-from main import BotClient
+import crud
 
 
-def configLog(client: BotClient):
+def configLog(client):
     logger = logging.getLogger("discord")
     logger.setLevel(logging.INFO)
     logging.getLogger("discord.http").setLevel(logging.INFO)
@@ -46,13 +45,7 @@ def load_config():
             return json.load(f)
 
 
-def config():
-    # intents for discord
-    intents = discord.Intents.default()
-    intents.message_content = True
-
-    # create client
-    client = BotClient(intents=intents)
+def config_startup(client):
     # add config to the client
     client.config = load_config()
     client.config["connection-string"] = client.config["connection-string"].format(
@@ -61,6 +54,8 @@ def config():
         database=os.environ["POSTGRES_DB"],
         port=os.environ["POSTGRES_PORT"],
     )
+    crud.setup_database(client.config["connection-string"])
+
     # configure logging
     configLog(client)
 
@@ -68,9 +63,7 @@ def config():
     try:
         if "discord" not in client.config:
             client.config["discord"] = {}
-        client.config["discord"]["token"] = os.environ["PyBotToken"]
+        client.config["discord"]["token"] = os.environ["PYBOTTOKEN"]
     except KeyError:
         client.logger.error("No token found in environment variables")
         exit(1)
-
-    return client

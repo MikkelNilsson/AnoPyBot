@@ -1,6 +1,6 @@
 {
     "discord": {
-        "replay-messages": "false"
+        "replay-messages": "true"
     },
     "logging": {
         "level": "info"

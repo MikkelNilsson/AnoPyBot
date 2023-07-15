@@ -4,7 +4,7 @@ services:
     build: ./app
     command: bash -c "alembic upgrade head && python main.py"
     environment:
-      - PyBotToken=${PyBotToken}
+      - PYBOTTOKEN=${PYBOTTOKEN}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
@@ -22,6 +22,6 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
     ports:
-      - ${POSTGRES_PORT}:5432
+      - 6543:${POSTGRES_PORT}
     volumes:
       - ./db-data:/var/lib/postgresql/data

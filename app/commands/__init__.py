@@ -1,6 +1,7 @@
 import logging
 import discord
 import enum
+from crud import get_command_prefix_or_initiate
 
 
 class permissions(enum.Enum):
@@ -72,8 +73,10 @@ def command(
     return decorator_function
 
 
-async def exec(message: discord.Message, prefix: str = "!"):
+async def exec(message: discord.Message):
     h = Handler.handler
+
+    prefix = get_command_prefix_or_initiate(message.guild.id)
 
     # Check if message is a command
     if message.content.startswith(prefix):
