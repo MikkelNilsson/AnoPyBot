@@ -12,14 +12,14 @@ def setup_database(connection_string):
     Session.configure(bind=engine)
 
 
-def get_server_data(server_id, db: Session):
+def get_server_data(db: Session, server_id: int) -> Server:
     res = db.query(Server).where(Server.server_id == server_id).first()
     return res
 
 
 def get_command_prefix_or_initiate(server_id):
     with Session() as db:
-        server = get_server_data(server_id, db)
+        server = get_server_data(db, server_id)
         if not server:
             server = Server(server_id=server_id)
             db.add(server)
@@ -32,4 +32,11 @@ def update_prefix(server_id: int, prefix: str):
         db.query(Server).filter(Server.server_id == server_id).update(
             {"prefix": prefix}
         )
+        db.commit()
+
+
+def update_default_role(server_id: int, role: int):
+    with Session() as db:
+        server_data = get_server_data(db, server_id)
+        server_data.default_role = role
         db.commit()
