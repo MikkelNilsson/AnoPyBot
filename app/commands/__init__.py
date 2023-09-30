@@ -2,26 +2,32 @@ import logging
 import discord
 import enum
 from crud import get_command_prefix_or_initiate
+from schema import Command, permission
 
+handler = None
 
-class permissions(enum.Enum):
-    MAINTAINER = 0
-    ADMIN = 1
-
+class CommandError(Exception):
+    message: str
+    
+    def __init__(self, msg: str) -> None:
+        super().__init__()
+        self.message = msg
 
 class Handler:
-    handler = None
+    
 
-    def __init__(self, logger: logging.Logger = None):
+    def __init__(self):
         # commands keeps track of all commands
-        self.commands = {}
-        # command_map maps aliases to the command name
-        self.command_map = {}
-        self.logger = logger
-        Handler.handler = self
-        from commands import root
+        global handler
+        if not handler:
+            self.commands = {}
+            # command_map maps aliases to the command name
+            self.command_map = {}
+            handler = self
+            from commands import root
+        
 
-    def get_command(self, name: str):
+    def get_command(self, name: str) -> Command:
         """Returns the command with the given name
 
         Args:
@@ -40,8 +46,10 @@ def command(
     name: str,
     description: str = None,
     keep_args: bool = True,
-    permissions: list[permissions] = [],
+    permissions: list[permission] = [],
     aliases: list[str] = [],
+    pre_hook: callable = None,
+    post_hook: callable = None,
 ):
     """Decorator for commands, adds the command to the list of available commands.
 
@@ -54,74 +62,85 @@ def command(
     """
 
     def decorator_function(func):
-        Handler.handler.commands[name] = {
-            "callable": func,
-            "description": description,
-            "keep_args": keep_args,
-            "permissions": permissions,
-            "aliases": aliases,
-        }
-        Handler.handler.command_map[name] = name
+        handler.commands[name] = Command(
+            method=func,
+            description=description,
+            keep_args=keep_args,
+            permissions=permissions,
+            aliases=aliases,
+            pre_hook=pre_hook,
+            post_hook=post_hook
+        )
+        handler.command_map[name] = name
         for alias in aliases:
-            Handler.handler.command_map[alias] = name
+            handler.command_map[alias] = name
 
         def decorated_function(*args, **kwargs):
             return func(*args, **kwargs)
-
+    
         return decorated_function
 
     return decorator_function
 
 
 async def exec(message: discord.Message):
-    h = Handler.handler
-
     prefix = get_command_prefix_or_initiate(message.guild.id)
 
     # Check if message is a command
     if message.content.startswith(prefix):
         # Get command and args
         cmd = message.content[len(prefix) :].split(" ", 1)
-        command = h.get_command(cmd[0].lower())
+        command: Command = handler.get_command(cmd[0].lower())
 
         # Check if command exists
         if command:
             # Check if user has permission to use command
-            for permission in command["permissions"]:
+            for permission in command.permissions:
                 if (
-                    permission is permissions.ADMIN
+                    permission is permission.ADMIN
                     and not message.author.guild_permissions.administrator
                 ):
                     return
                 if (
-                    permission is permissions.MAINTAINER
-                    and message.author.id not in h.config["bot"]["owners"]
+                    permission is permission.MAINTAINER
+                    and message.author.id not in handler.config["bot"]["owners"]
                 ):
                     return
 
-            # Execute command
-            if command["keep_args"]:
-                args = cmd[1] if len(cmd) > 1 else ""
-                h.logger.info(
-                    "Executing: "
-                    + h.command_map[cmd[0].lower()]
-                    + ' with "'
-                    + args
-                    + '" for '
-                    + str(message.author)
-                )
-                res = await command["callable"](message, args)
+            try:
+                # Pre command hook
+                if command.pre_hook:
+                    command.pre_hook(message)
+                # Execute command
+                if command.keep_args:
+                    args = cmd[1] if len(cmd) > 1 else ""
+                    print(
+                        "Executing: "
+                        + handler.command_map[cmd[0].lower()]
+                        + ' with "'
+                        + args
+                        + '" for '
+                        + str(message.author)
+                    )
+                    res = await command.method(message, args)
 
-            else:
-                h.logger.info(
-                    f"{message.guild.name}/{message.channel.name}:"
-                    + f" Executing {h.command_map[cmd[0].lower()]}"
-                    + f" for {str(message.author)}"
-                )
-                res = await command["callable"](message)
+                else:
+                    print(
+                        f"{message.guild.name}/{message.channel.name}:"
+                        + f" Executing {handler.command_map[cmd[0].lower()]}"
+                        + f" for {str(message.author)}"
+                    )
+                    res = await command.method(message)
+                
+                # post command hook
+                if command.post_hook:
+                    command.post_hook(res)
+                
+                if res:
+                    print(res)
 
-            if res is not None:
-                h.logger.warning(res)
+            except CommandError as cmderr:
+                message.channel.send(cmderr.message)
 
         else:
             await message.reply("Command not found")

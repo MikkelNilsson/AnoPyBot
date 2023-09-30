@@ -1,9 +1,14 @@
 {
     "discord": {
-        "replay-messages": "true"
+        "replay-messages": "false"
     },
     "logging": {
-        "level": "info"
+        "level": {
+            "discord": "warning",
+            "discord.http": "warning",
+            "bot": "warning",
+            "default": "info"
+        }
     },
     "bot": {
         "prefix": "!",

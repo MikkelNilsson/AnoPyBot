@@ -1,19 +1,17 @@
 import discord
+from discord.ext import commands as discord_commands
 from config import config_startup
 import commands
-import logging
-import logging.handlers
-
+import logger
 
 class BotClient(discord.Client):
     def __init__(self, intents: discord.Intents):
         self.config = None
-        self.logger: logging.Logger = None
         super().__init__(intents=intents)
 
     async def on_ready(self):
-        self.logger.info(f"Logged on as {self.user}!")
-        self.logger.info(
+        logger.info(f"Logged on as {self.user}!")
+        logger.info(
             "Serving the following guilds: "
             + ", ".join([guild.name for guild in self.guilds])
         )
@@ -25,7 +23,7 @@ class BotClient(discord.Client):
             "replay-messages" in self.config["discord"]
             and self.config["discord"]["replay-messages"] == "true"
         ):
-            self.logger.info(
+            logger.info(
                 f"{message.guild.name}/{message.channel.name} - {message.author}: {message.content}"
             )
         await commands.exec(message)
@@ -33,12 +31,14 @@ class BotClient(discord.Client):
 
 if __name__ == "__main__":
     # intents for discord
-    intents = discord.Intents.default()
-    intents.message_content = True
+    intents = discord.Intents.all()
 
     # create client
     client = BotClient(intents=intents)
     config_startup(client)
+    logger.info("setup Done")
 
-    commands.Handler(client.logger)
+    commands.Handler()
+    logger.info("discord client run starting...")
     client.run(client.config["discord"]["token"], log_handler=None)
+    

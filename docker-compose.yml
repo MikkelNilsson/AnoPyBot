@@ -3,6 +3,7 @@ services:
     image: ano-py-bot:runtime
     build: ./app
     command: bash -c "alembic upgrade head && python main.py"
+    restart: always
     environment:
       - PYBOTTOKEN=${PYBOTTOKEN}
       - POSTGRES_USER=${POSTGRES_USER}

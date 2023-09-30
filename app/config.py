@@ -1,34 +1,13 @@
 import sys
 import json
-import logging
+import logger
 import os
 from pathlib import Path
 import crud
 
+class ConfigError(Exception):
+    pass
 
-def configLog(client):
-    logger = logging.getLogger("discord")
-    logger.setLevel(logging.INFO)
-    logging.getLogger("discord.http").setLevel(logging.INFO)
-
-    handler = logging.handlers.RotatingFileHandler(
-        filename="./logs/discord.log",
-        encoding="utf-8",
-        maxBytes=32 * 1024 * 1024,  # 32 MiB
-        backupCount=5,  # Rotate through 5 files
-    )
-
-    dt_fmt = "%d/%m/%Y %H:%M:%S"
-    formatter = logging.Formatter(
-        "[{asctime}] [{levelname:<8}] {name}: {message}", dt_fmt, style="{"
-    )
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-    std_err = logging.StreamHandler()
-    std_err.setFormatter(formatter)
-    logger.addHandler(std_err)
-
-    client.logger = logger
 
 
 def load_config():
@@ -48,6 +27,14 @@ def load_config():
 def config_startup(client):
     # add config to the client
     client.config = load_config()
+    
+    # Setup logging    
+    if "logging" in client.config:
+        logger.setup_logging(client.config["logging"])
+    else:
+        logger.setup_logging({"level": "info"})
+    
+    # Setup Database
     client.config["connection-string"] = client.config["connection-string"].format(
         user=os.environ["POSTGRES_USER"],
         password=os.environ["POSTGRES_PASSWORD"],
@@ -56,14 +43,11 @@ def config_startup(client):
     )
     crud.setup_database(client.config["connection-string"])
 
-    # configure logging
-    configLog(client)
-
     # get token from environment variables
     try:
         if "discord" not in client.config:
             client.config["discord"] = {}
         client.config["discord"]["token"] = os.environ["PYBOTTOKEN"]
     except KeyError:
-        client.logger.error("No token found in environment variables")
+        logger.Logger.error("No token found in environment variables")
         exit(1)

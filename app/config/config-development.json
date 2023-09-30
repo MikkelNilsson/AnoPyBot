@@ -1,7 +1,7 @@
 {
     "discord": {
         "replay-messages": "true"
-    },
+    },    
     "logging": {
         "level": "info"
     },
