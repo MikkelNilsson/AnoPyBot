@@ -1,47 +1,18 @@
 import discord
-import enum
 import logger
 from crud import get_command_prefix_or_initiate
-from schema import Command, permission
+from schema import (
+    Command,
+    permission,
+    Context,
+    CommandError,
+    CommandPermissionError
+)
 
 handler = None
 
-class CommandError(Exception):
-    message: str
-    
-    def __init__(self, msg: str) -> None:
-        super().__init__()
-        self.message = msg
 
-class Command():
-    command: str
-    rest: str
-    args: list[str]
 
-    def __init__(self, msg: discord.Message, command: str) -> None:
-        self.command = command
-        self.content = msg.content
-        self.rest = msg.content.split(" ", 1)[1:]
-        self.args = msg.content.split(" ")[1:]
-        
-
-class Context():
-    command: Command
-    guild: discord.Guild
-    channel: discord.abc.MessageableChannel
-    author: discord.User
-    message: discord.Message
-    
-    def __init__(self, msg: discord.Message, command: str):
-        self.command = Command(msg, command)
-        self.guild = msg.guild
-        self.channel = msg.channel
-        self.author = msg.author
-        self.message = msg
-    
-    async def reply(self, msg: str):
-        await self.message.reply(msg)
-    
 
 class Handler:
 
@@ -77,6 +48,7 @@ def command(
     keep_args: bool = True,
     permissions: list[permission] = [],
     aliases: list[str] = [],
+    in_guild: bool = True,
     pre_hook: callable = None,
     post_hook: callable = None,
 ):
@@ -93,10 +65,12 @@ def command(
     def decorator_function(func):
         handler.commands[name] = Command(
             method=func,
+            name=name,
             description=description,
             keep_args=keep_args,
             permissions=permissions,
             aliases=aliases,
+            in_guild=in_guild,
             pre_hook=pre_hook,
             post_hook=post_hook
         )
@@ -113,63 +87,64 @@ def command(
 
 
 async def exec(message: discord.Message):
-    prefix = get_command_prefix_or_initiate(message.guild.id)
+    if message.guild:
+        prefix = get_command_prefix_or_initiate(message.guild.id)
+    else:
+        prefix = "!"
 
     # Check if message is a command
     if message.content.startswith(prefix):
+
         # Get command and args
         cmd = message.content[len(prefix) :].split(" ", 1)
         command: Command = handler.get_command(cmd[0].lower())
 
         # Check if command exists
         if command:
-            # Check if user has permission to use command
-            for permission in command.permissions:
-                if (
-                    permission is permission.ADMIN
-                    and not message.author.guild_permissions.administrator
-                ):
-                    return
-                if (
-                    permission is permission.MAINTAINER
-                    and message.author.id not in handler.config["bot"]["owners"]
-                ):
-                    return
+            ctx: Context = Context(message, command.name)
 
             try:
+                if command.in_guild and not ctx.in_guild():
+                    raise CommandError("Command has to be executed in a server!")
+
+                # Check if user has permission to use command
+                for permission in command.permissions:
+                    if (
+                        permission is permission.ADMIN
+                        and not message.author.guild_permissions.administrator
+                    ):
+                        raise CommandPermissionError()
+                    if (
+                        permission is permission.MAINTAINER
+                        and message.author.id not in handler.config["bot"]["owners"]
+                    ):
+                        raise CommandPermissionError()
+
                 # Pre command hook
                 if command.pre_hook:
-                    command.pre_hook(message)
+                    command.pre_hook(ctx)
                 # Execute command
-                if command.keep_args:
-                    args = cmd[1] if len(cmd) > 1 else ""
-                    logger.info(
-                        "Executing: "
-                        + handler.command_map[cmd[0].lower()]
-                        + ' with "'
-                        + args
-                        + '" for '
-                        + str(message.author)
-                    )
-                    res = await command.method(message, args)
-
-                else:
-                    logger.info(
-                        f"{message.guild.name}/{message.channel.name}:"
-                        + f" Executing {handler.command_map[cmd[0].lower()]}"
-                        + f" for {str(message.author)}"
-                    )
-                    res = await command.method(message)
+                logger.info(
+                    "Executing: "
+                    + ctx.command.command
+                    + ' with "'
+                    + ctx.command.args
+                    + '" for '
+                    + str(ctx.author)
+                )
+                res = await command.method(ctx)
                 
                 # post command hook
                 if command.post_hook:
-                    command.post_hook(res)
+                    command.post_hook(ctx, res)
                 
                 if res:
                     print(res)
 
             except CommandError as cmderr:
                 message.channel.send(cmderr.message)
+            except CommandPermissionError:
+                message.channel.send("You do not have permission to execute this command.")
 
         else:
             await message.reply("Command not found")

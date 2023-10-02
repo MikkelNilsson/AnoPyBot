@@ -1,4 +1,5 @@
 from commands import command, CommandError
+import schema
 import lavalink
 import discord
 
@@ -75,6 +76,6 @@ class LavalinkVoiceClient(discord.VoiceClient):
         self.cleanup()
 
 
-@command("play", keep_args=True, aliases=["p"])
-async def Play(msg: discord.Message, rest: str):
+@command("play", aliases=["p"])
+async def Play(ctx: schema.Context):
     pass
