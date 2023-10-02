@@ -1,6 +1,6 @@
-import logging
 import discord
 import enum
+import logger
 from crud import get_command_prefix_or_initiate
 from schema import Command, permission
 
@@ -13,8 +13,37 @@ class CommandError(Exception):
         super().__init__()
         self.message = msg
 
-class Handler:
+class Command():
+    command: str
+    rest: str
+    args: list[str]
+
+    def __init__(self, msg: discord.Message, command: str) -> None:
+        self.command = command
+        self.content = msg.content
+        self.rest = msg.content.split(" ", 1)[1:]
+        self.args = msg.content.split(" ")[1:]
+        
+
+class Context():
+    command: Command
+    guild: discord.Guild
+    channel: discord.abc.MessageableChannel
+    author: discord.User
+    message: discord.Message
     
+    def __init__(self, msg: discord.Message, command: str):
+        self.command = Command(msg, command)
+        self.guild = msg.guild
+        self.channel = msg.channel
+        self.author = msg.author
+        self.message = msg
+    
+    async def reply(self, msg: str):
+        await self.message.reply(msg)
+    
+
+class Handler:
 
     def __init__(self):
         # commands keeps track of all commands
@@ -114,7 +143,7 @@ async def exec(message: discord.Message):
                 # Execute command
                 if command.keep_args:
                     args = cmd[1] if len(cmd) > 1 else ""
-                    print(
+                    logger.info(
                         "Executing: "
                         + handler.command_map[cmd[0].lower()]
                         + ' with "'
@@ -125,7 +154,7 @@ async def exec(message: discord.Message):
                     res = await command.method(message, args)
 
                 else:
-                    print(
+                    logger.info(
                         f"{message.guild.name}/{message.channel.name}:"
                         + f" Executing {handler.command_map[cmd[0].lower()]}"
                         + f" for {str(message.author)}"
