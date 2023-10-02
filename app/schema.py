@@ -58,19 +58,23 @@ class ContextCommand():
     def __init__(self, msg: discord.Message, command: str) -> None:
         self.command = command
         self.content = msg.content
-        self.rest = msg.content.split(" ", 1)[1:]
         self.args = msg.content.split(" ")[1:]
+        self.rest = ( 
+            msg.content.split(" ", 1)[1]
+            if len(self.args) > 1
+            else ""
+        )
         
 
 class Context():
     command: ContextCommand
     guild: discord.Guild
-    channel: discord.abc.MessageableChannel
+    channel: discord.TextChannel
     author: discord.User | discord.Member
     message: discord.Message
     
     def __init__(self, msg: discord.Message, command: str):
-        self.command = Command(msg, command)
+        self.command = ContextCommand(msg, command)
         self.guild = msg.guild
         self.channel = msg.channel
         self.author = msg.author

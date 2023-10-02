@@ -1,10 +1,9 @@
 from commands import command, CommandError
 import schema
-import discord
 import crud
 import logger
 
-@command("setprefix", permissions=[schema.permission.ADMIN], keep_args=True, aliases=["sp"])
+@command("setprefix", permissions=[schema.permission.ADMIN], aliases=["sp"])
 async def set_prefix(ctx: schema.Context):
     if ctx.command.args and len(ctx.command.args) > 0:
         new_prefix = ctx.command.args[0]
@@ -14,7 +13,7 @@ async def set_prefix(ctx: schema.Context):
         raise CommandError("Failed ")
 
 
-@command("setdefaultrole", permissions=[schema.permission.ADMIN], keep_args=True)
+@command("setdefaultrole", permissions=[schema.permission.ADMIN])
 async def set_default_role(ctx: schema.Context):
     if not ctx.command.args or len(ctx.command.args) == 0:
         raise CommandError(f"The {ctx.command.command} command needs an argument")

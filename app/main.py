@@ -20,8 +20,7 @@ class BotClient(discord.Client):
         if message.author.bot:
             return
         if (
-            "replay-messages" in self.config["discord"]
-            and self.config["discord"]["replay-messages"] == "true"
+            "replay-messages" in self.config["discord"] and self.config["discord"]["replay-messages"]
         ):
             logger.info(
                 f"{message.guild.name}/{message.channel.name} - {message.author}: {message.content}"
@@ -36,9 +35,11 @@ if __name__ == "__main__":
     # create client
     client = BotClient(intents=intents)
     config_startup(client)
-    logger.info("setup Done")
-
-    commands.Handler()
-    logger.info("discord client run starting...")
+    
+    logger.info("Setup: Done")
+    
+    commands.Handler(client.config["bot"]["owners"])
+    logger.info("Command Handler Setup: Done")
+    
     client.run(client.config["discord"]["token"], log_handler=None)
     

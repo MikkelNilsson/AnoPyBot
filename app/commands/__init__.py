@@ -11,15 +11,13 @@ from schema import (
 
 handler = None
 
-
-
-
 class Handler:
 
-    def __init__(self):
+    def __init__(self, owners: list[int]):
         # commands keeps track of all commands
         global handler
         if not handler:
+            self.owners = owners
             self.commands = {}
             # command_map maps aliases to the command name
             self.command_map = {}
@@ -45,7 +43,6 @@ class Handler:
 def command(
     name: str,
     description: str = None,
-    keep_args: bool = True,
     permissions: list[permission] = [],
     aliases: list[str] = [],
     in_guild: bool = True,
@@ -67,7 +64,6 @@ def command(
             method=func,
             name=name,
             description=description,
-            keep_args=keep_args,
             permissions=permissions,
             aliases=aliases,
             in_guild=in_guild,
@@ -116,7 +112,7 @@ async def exec(message: discord.Message):
                         raise CommandPermissionError()
                     if (
                         permission is permission.MAINTAINER
-                        and message.author.id not in handler.config["bot"]["owners"]
+                        and message.author.id not in handler.owners
                     ):
                         raise CommandPermissionError()
 
@@ -127,10 +123,10 @@ async def exec(message: discord.Message):
                 logger.info(
                     "Executing: "
                     + ctx.command.command
-                    + ' with "'
-                    + ctx.command.args
+                    + ' with args: "'
+                    + ctx.command.rest
                     + '" for '
-                    + str(ctx.author)
+                    + ctx.author.name
                 )
                 res = await command.method(ctx)
                 

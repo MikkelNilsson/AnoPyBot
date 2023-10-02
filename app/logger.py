@@ -13,7 +13,7 @@ def setup_logging(log_config):
         level_dict = _get_logging_level_settings(log_config["level"])
 
     handler = handlers.RotatingFileHandler(
-        filename="./logs/discord.log",
+        filename="./logs/bot.log",
         encoding="utf-8",
         maxBytes=32 * 1024 * 1024,  # 32 MiB
         backupCount=5,  # Rotate through 5 files

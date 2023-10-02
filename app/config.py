@@ -1,5 +1,6 @@
 import sys
 import json
+import yaml
 import logger
 import os
 from pathlib import Path
@@ -9,30 +10,38 @@ class ConfigError(Exception):
     pass
 
 
-
 def load_config():
     prefix = str(Path(__file__).parent)
+    load_prod = os.getenv("IS_PROD", "False").lower() == "true"
+    
     # load production config
-    if len(sys.argv) > 1 and sys.argv[1].lower() == "prod":
-        print("Loading production config")
-        with open(prefix + "/config/config.json", "r") as f:
-            return json.load(f)
+    if load_prod:
+        with open(prefix + "/config/config.yml", "r") as f:
+            res = yaml.safe_load(f)
     # load development config
     else:
-        print("Loading development config")
-        with open(prefix + "/config/config-development.json", "r") as f:
-            return json.load(f)
+        with open(prefix + "/config/config-development.yml", "r") as f:
+            res = yaml.safe_load(f)
+    
+    res["is_prod"] = load_prod
+    return res
 
 
 def config_startup(client):
     # add config to the client
     client.config = load_config()
-    
+
     # Setup logging    
     if "logging" in client.config:
         logger.setup_logging(client.config["logging"])
     else:
         logger.setup_logging({"level": "info"})
+    
+    logger.info(
+        "Loaded Production Configuration"
+        if client.config["is_prod"]
+        else "Loaded Development Configuration"
+    )
     
     # Setup Database
     client.config["connection-string"] = client.config["connection-string"].format(
@@ -42,6 +51,7 @@ def config_startup(client):
         port=os.environ["POSTGRES_PORT"],
     )
     crud.setup_database(client.config["connection-string"])
+    logger.info("Database Setup: Done")
 
     # get token from environment variables
     try:
@@ -51,3 +61,4 @@ def config_startup(client):
     except KeyError:
         logger.Logger.error("No token found in environment variables")
         exit(1)
+    logger.info("Bot Token: Loaded")

@@ -3,14 +3,15 @@ from commands import (
     settings,
     music
 )
+import schema
 
-@command("random", keep_args=False, aliases=["rand"])
-async def random_command(msg):
-    await msg.reply("Hello World!")
+@command("random", aliases=["rand"])
+async def random_command(ctx: schema.Context):
+    await ctx.reply("Hello World!")
 
-@command("rando", keep_args=True, aliases=["ran"])
-async def random_command(msg, rest):
-    await msg.reply("Hello World!" + " " + rest)
+@command("rando", permissions=[schema.permission.MAINTAINER], aliases=["ran"])
+async def random_command(ctx: schema.Context):
+    await ctx.reply("Hello World!" + " " + ctx.command.rest)
 
 
 
