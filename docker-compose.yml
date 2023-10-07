@@ -1,6 +1,6 @@
 services:
   bot:
-    image: ano-py-bot:runtime
+    image: mikkelnilsson/ano-py-bot:runtime
     build: ./bot
     command: bash -c "alembic upgrade head && python bot.py"
     restart: always
