@@ -1,6 +1,0 @@
-discord
-sqlalchemy
-psycopg2-binary
-alembic
-lavalink
-pyyaml
