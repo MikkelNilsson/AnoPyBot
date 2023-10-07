@@ -21,6 +21,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      SSH_USER: ${{ secrets.SSH_USER }}
+      SSH_HOST: ${{ secrets.SSH_HOST }}
 
     steps:
       - name: Checkout
@@ -44,6 +47,13 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/ano-py-bot:runtime
           cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/ano-py-bot:webbuildcache
           cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/ano-py-bot:webbuildcache,mode=max
+        env:
+          IS_PROD: ${{ vars.IS_PROD }}
+          POSTGRES_USER: ${{ secrets.POSTGRESS_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRESS_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRESS_DB }}
+          POSTGRES_PORT: ${{ secrets.POSTGRESS_PORT }}
+          PYBOTTOKEN: ${{ secrets.PYBOTTOKEN }}
 
       - name: Configure SSH
         run: |
@@ -58,16 +68,10 @@ jobs:
           scp -i ~/.ssh/bot.key -o StrictHostKeyChecking=no deploy.sh $SSH_USER@$SSH_HOST:/AnoPyBot
           scp -i ~/.ssh/bot.key -o StrictHostKeyChecking=no lavalink $SSH_USER@$SSH_HOST:/AnoPyBot
           scp -i ~/.ssh/bot.key -o StrictHostKeyChecking=no docker-compose.yml $SSH_USER@$SSH_HOST:/AnoPyBot
-        env:
-          SSH_USER: ${{ secrets.SSH_USER }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
 
       - name: Deploy to server
         # Configure the ~./bash_profile and deploy.sh file on the Vagrantfile
         run: >
           ssh $SSH_USER@$SSH_HOST
-          -i ~/.ssh/minitwit.key -o StrictHostKeyChecking=no
+          -i ~/.ssh/bot.key -o StrictHostKeyChecking=no
           'cd /AnoPyBot; /AnoPyBot/deploy.sh'
-        env:
-          SSH_USER: ${{ secrets.SSH_USER }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
