@@ -28,13 +28,13 @@ target_metadata = Base.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
-from config import load_config
 import os
 
-url = "postgresql+psycopg2://{user}:{password}@db:5432/{database}".format(
+url = "postgresql+psycopg2://{user}:{password}@db:{port}/{database}".format(
     user=os.environ["POSTGRES_USER"],
     password=os.environ["POSTGRES_PASSWORD"],
     database=os.environ["POSTGRES_DB"],
+    port=os.environ["POSTGRES_PORT"],
 )
 
 
