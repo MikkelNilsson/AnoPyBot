@@ -2,7 +2,7 @@ services:
   bot:
     image: ano-py-bot:runtime
     build: ./app
-    command: bash -c "alembic upgrade head && python main.py prod"
+    command: bash -c "alembic upgrade head && python bot.py"
     restart: always
     environment:
       - PYBOTTOKEN=${PYBOTTOKEN}
@@ -27,9 +27,11 @@ services:
       - _JAVA_OPTIONS=-Xmx6G # set Java options here
       - SERVER_PORT=2333 # set lavalink server port
       - LAVALINK_SERVER_PASSWORD=youshallnotpass # set password for lavalink
+    ports:
+      - 2333:2333
     volumes:
       - ./lavalink/application.yml:/opt/Lavalink/application.yml # mount application.yml from the same directory or use environment variables
-      - ./plugins/:/opt/Lavalink/plugins/ # persist plugins between restarts, make sure to set the correct permissions (user: 322, group: 322)
+      - ./lavalink/plugins/:/opt/Lavalink/plugins/ # persist plugins between restarts, make sure to set the correct permissions (user: 322, group: 322)
     networks:
       - lavalink
 

@@ -1,6 +1,6 @@
 import discord
 import logger
-from crud import get_command_prefix_or_initiate
+from modules import crud
 from schema import (
     Command,
     permission,
@@ -13,10 +13,11 @@ handler = None
 
 class Handler:
 
-    def __init__(self, owners: list[int]):
+    def __init__(self, owners: list[int], client: discord.Client):
         # commands keeps track of all commands
         global handler
         if not handler:
+            self.bot = client
             self.owners = owners
             self.commands = {}
             # command_map maps aliases to the command name
@@ -84,7 +85,7 @@ def command(
 
 async def exec(message: discord.Message):
     if message.guild:
-        prefix = get_command_prefix_or_initiate(message.guild.id)
+        prefix = crud.get_command_prefix_or_initiate(message.guild.id)
     else:
         prefix = "!"
 
@@ -97,7 +98,7 @@ async def exec(message: discord.Message):
 
         # Check if command exists
         if command:
-            ctx: Context = Context(message, command.name)
+            ctx: Context = Context(message, command.name, handler.bot)
 
             try:
                 if command.in_guild and not ctx.in_guild():
@@ -118,7 +119,7 @@ async def exec(message: discord.Message):
 
                 # Pre command hook
                 if command.pre_hook:
-                    command.pre_hook(ctx)
+                    await command.pre_hook(ctx)
                 # Execute command
                 logger.info(
                     "Executing: "
@@ -132,7 +133,7 @@ async def exec(message: discord.Message):
                 
                 # post command hook
                 if command.post_hook:
-                    command.post_hook(ctx, res)
+                    await command.post_hook(ctx, res)
                 
                 if res:
                     print(res)

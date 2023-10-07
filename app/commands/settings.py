@@ -1,6 +1,6 @@
 from commands import command, CommandError
 import schema
-import crud
+import modules.crud as crud
 import logger
 
 @command("setprefix", permissions=[schema.permission.ADMIN], aliases=["sp"])

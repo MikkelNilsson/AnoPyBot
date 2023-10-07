@@ -1,6 +1,7 @@
 import enum
 import discord
 from typing import Optional
+import bot
 
 class permission(enum.Enum):
     MAINTAINER = 0
@@ -70,18 +71,25 @@ class Context():
     command: ContextCommand
     guild: discord.Guild
     channel: discord.TextChannel
+    voice_client: discord.VoiceProtocol | None
     author: discord.User | discord.Member
     message: discord.Message
+    bot: discord.Client
     
-    def __init__(self, msg: discord.Message, command: str):
+    def __init__(self, msg: discord.Message, command: str, client: discord.Client):
         self.command = ContextCommand(msg, command)
         self.guild = msg.guild
         self.channel = msg.channel
         self.author = msg.author
         self.message = msg
+        self.voice_client = msg.guild.voice_client
+        self.bot = client
     
     async def reply(self, msg: str):
         await self.message.reply(msg)
     
     def in_guild(self):
         return self.guild or False
+
+    async def send(self, msg: str, embed: discord.Embed = None):
+        await self.channel.send(msg, embed=embed)

@@ -1,10 +1,9 @@
-import sys
-import json
 import yaml
 import logger
 import os
 from pathlib import Path
-import crud
+import modules.crud as crud
+import modules.music as music
 
 class ConfigError(Exception):
     pass

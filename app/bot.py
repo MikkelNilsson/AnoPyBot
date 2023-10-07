@@ -1,8 +1,8 @@
 import discord
-from discord.ext import commands as discord_commands
 from config import config_startup
 import commands
 import logger
+import modules.music
 
 class BotClient(discord.Client):
     def __init__(self, intents: discord.Intents):
@@ -11,10 +11,13 @@ class BotClient(discord.Client):
 
     async def on_ready(self):
         logger.info(f"Logged on as {self.user}!")
+        modules.music.setup(client=self)
+        logger.info("Lavalink Setup: Done")
         logger.info(
             "Serving the following guilds: "
             + ", ".join([guild.name for guild in self.guilds])
         )
+        
 
     async def on_message(self, message: discord.Message):
         if message.author.bot:
@@ -38,8 +41,7 @@ if __name__ == "__main__":
     
     logger.info("Setup: Done")
     
-    commands.Handler(client.config["bot"]["owners"])
+    commands.Handler(client.config["bot"]["owners"], client)
     logger.info("Command Handler Setup: Done")
     
     client.run(client.config["discord"]["token"], log_handler=None)
-    
