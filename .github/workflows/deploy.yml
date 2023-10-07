@@ -68,17 +68,17 @@ jobs:
         run: >
           ssh $SSH_USER@$SSH_HOST
           -i ~/.ssh/bot.key -o StrictHostKeyChecking=no
-          "export IS_PROD=$IS_PROD;"
-          "export POSTGRES_USER=$POSTGRES_USER;"
-          "export POSTGRES_PASSWORD=$POSTGRES_PASSWORD;"
-          "export POSTGRES_DB=$POSTGRES_DB;"
-          "export POSTGRES_PORT=$POSTGRES_PORT;"
-          "export PYBOTTOKEN=$PYBOTTOKEN;"
-          'cd /AnoPyBot; /AnoPyBot/deploy.sh'
+          "export IS_PROD=$IS_PROD;
+          export POSTGRES_USER=$POSTGRES_USER;
+          export POSTGRES_PASSWORD=$POSTGRES_PASSWORD;
+          export POSTGRES_DB=$POSTGRES_DB;
+          export POSTGRES_PORT=$POSTGRES_PORT;
+          export PYBOTTOKEN=$PYBOTTOKEN;
+          cd /AnoPyBot; /AnoPyBot/deploy.sh"
         env:
           IS_PROD: ${{ vars.IS_PROD }}
-          POSTGRES_USER: ${{ secrets.POSTGRESS_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRESS_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.POSTGRESS_DB }}
-          POSTGRES_PORT: ${{ secrets.POSTGRESS_PORT }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
           PYBOTTOKEN: ${{ secrets.PYBOTTOKEN }}
