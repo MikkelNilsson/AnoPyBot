@@ -67,7 +67,7 @@ jobs:
       - name: Copy remote_files directory to server
         run: |
           scp -i ~/.ssh/bot.key -o StrictHostKeyChecking=no deploy.sh $SSH_USER@$SSH_HOST:/AnoPyBot/deploy.sh
-          scp -i ~/.ssh/bot.key -o StrictHostKeyChecking=no lavalink/ $SSH_USER@$SSH_HOST:/AnoPyBot/lavalink/
+          scp -i ~/.ssh/bot.key -o StrictHostKeyChecking=no -r lavalink/ $SSH_USER@$SSH_HOST:/AnoPyBot/lavalink/
           scp -i ~/.ssh/bot.key -o StrictHostKeyChecking=no docker-compose.yml $SSH_USER@$SSH_HOST:/AnoPyBot/docker-compose.yml
 
       - name: Deploy to server
