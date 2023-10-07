@@ -48,13 +48,6 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/ano-py-bot:runtime
           cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/ano-py-bot:webbuildcache
           cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/ano-py-bot:webbuildcache,mode=max
-        env:
-          IS_PROD: ${{ vars.IS_PROD }}
-          POSTGRES_USER: ${{ secrets.POSTGRESS_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRESS_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.POSTGRESS_DB }}
-          POSTGRES_PORT: ${{ secrets.POSTGRESS_PORT }}
-          PYBOTTOKEN: ${{ secrets.PYBOTTOKEN }}
 
       - name: Configure SSH
         run: |
@@ -76,3 +69,10 @@ jobs:
           ssh $SSH_USER@$SSH_HOST
           -i ~/.ssh/bot.key -o StrictHostKeyChecking=no
           'cd /AnoPyBot; /AnoPyBot/deploy.sh'
+        env:
+          IS_PROD: ${{ vars.IS_PROD }}
+          POSTGRES_USER: ${{ secrets.POSTGRESS_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRESS_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRESS_DB }}
+          POSTGRES_PORT: ${{ secrets.POSTGRESS_PORT }}
+          PYBOTTOKEN: ${{ secrets.PYBOTTOKEN }}
