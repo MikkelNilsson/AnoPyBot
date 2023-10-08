@@ -65,6 +65,7 @@ jobs:
           scp -i ~/.ssh/bot.key -o StrictHostKeyChecking=no bot/config/config.yml $SSH_USER@$SSH_HOST:/AnoPyBot/bot
 
       - name: Create .env file
+        run: >  
           ssh $SSH_USER@$SSH_HOST
           -i ~/.ssh/bot.key -o StrictHostKeyChecking=no
           "echo 'export IS_PROD=$IS_PROD\n
