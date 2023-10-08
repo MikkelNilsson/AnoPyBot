@@ -82,4 +82,8 @@ jobs:
         run: >
           ssh $SSH_USER@$SSH_HOST
           -i ~/.ssh/bot.key -o StrictHostKeyChecking=no
-          'cd /AnoPyBot; /AnoPyBot/deploy.sh'
+          "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD;
+          cd /AnoPyBot; /AnoPyBot/deploy.sh"
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
