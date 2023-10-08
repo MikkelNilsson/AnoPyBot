@@ -68,12 +68,12 @@ jobs:
         run: >  
           ssh $SSH_USER@$SSH_HOST
           -i ~/.ssh/bot.key -o StrictHostKeyChecking=no
-          "echo 'export IS_PROD=$IS_PROD\n
-          export POSTGRES_USER=$POSTGRES_USER\n
-          export POSTGRES_PASSWORD=$POSTGRES_PASSWORD\n
-          export POSTGRES_DB=$POSTGRES_DB\n
-          export POSTGRES_PORT=$POSTGRES_PORT\n
-          export PYBOTTOKEN=$PYBOTTOKEN' > .env"
+          "echo -e \"IS_PROD=$IS_PROD\\n
+          POSTGRES_USER=$POSTGRES_USER\\n
+          POSTGRES_PASSWORD=$POSTGRES_PASSWORD\\n
+          POSTGRES_DB=$POSTGRES_DB\\n
+          POSTGRES_PORT=$POSTGRES_PORT\\n
+          PYBOTTOKEN=$PYBOTTOKEN\" > .env"
         env:
           IS_PROD: ${{ vars.IS_PROD }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
