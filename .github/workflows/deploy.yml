@@ -62,19 +62,17 @@ jobs:
           scp -i ~/.ssh/bot.key -o StrictHostKeyChecking=no deploy.sh $SSH_USER@$SSH_HOST:/AnoPyBot/deploy.sh
           scp -i ~/.ssh/bot.key -o StrictHostKeyChecking=no -r lavalink/ $SSH_USER@$SSH_HOST:/AnoPyBot/lavalink/
           scp -i ~/.ssh/bot.key -o StrictHostKeyChecking=no docker-compose.yml $SSH_USER@$SSH_HOST:/AnoPyBot/docker-compose.yml
+          scp -i ~/.ssh/bot.key -o StrictHostKeyChecking=no bot/config/config.yml $SSH_USER@$SSH_HOST:/AnoPyBot/bot
 
-      - name: Deploy to server
-        # Configure the ~./bash_profile and deploy.sh file on the Vagrantfile
-        run: >
+      - name: Create .env file
           ssh $SSH_USER@$SSH_HOST
           -i ~/.ssh/bot.key -o StrictHostKeyChecking=no
-          "export IS_PROD=$IS_PROD;
-          export POSTGRES_USER=$POSTGRES_USER;
-          export POSTGRES_PASSWORD=$POSTGRES_PASSWORD;
-          export POSTGRES_DB=$POSTGRES_DB;
-          export POSTGRES_PORT=$POSTGRES_PORT;
-          export PYBOTTOKEN=$PYBOTTOKEN;
-          cd /AnoPyBot; /AnoPyBot/deploy.sh"
+          "echo 'export IS_PROD=$IS_PROD\n
+          export POSTGRES_USER=$POSTGRES_USER\n
+          export POSTGRES_PASSWORD=$POSTGRES_PASSWORD\n
+          export POSTGRES_DB=$POSTGRES_DB\n
+          export POSTGRES_PORT=$POSTGRES_PORT\n
+          export PYBOTTOKEN=$PYBOTTOKEN' > .env"
         env:
           IS_PROD: ${{ vars.IS_PROD }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
@@ -82,3 +80,10 @@ jobs:
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
           PYBOTTOKEN: ${{ secrets.PYBOTTOKEN }}
+
+      - name: Deploy to server
+        # Configure the ~./bash_profile and deploy.sh file on the Vagrantfile
+        run: >
+          ssh $SSH_USER@$SSH_HOST
+          -i ~/.ssh/bot.key -o StrictHostKeyChecking=no
+          'cd /AnoPyBot; /AnoPyBot/deploy.sh'
