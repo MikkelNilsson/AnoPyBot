@@ -11,13 +11,6 @@ on:
   workflow_dispatch:
     manual: true
 
-# Remember to set the following secrets in your repository's settings:
-# DOCKER_USERNAME
-# DOCKER_PASSWORD
-# SSH_USER
-# SSH_KEY
-# SSH_HOST
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -65,7 +58,7 @@ jobs:
         run: >  
           ssh $SSH_USER@$SSH_HOST
           -i ~/.ssh/bot.key -o StrictHostKeyChecking=no
-          "echo -e \"IS_PROD=$IS_PROD\\nPOSTGRES_USER=$POSTGRES_USER\\nPOSTGRES_PASSWORD=$POSTGRES_PASSWORD\\nPOSTGRES_DB=$POSTGRES_DB\\nPOSTGRES_PORT=$POSTGRES_PORT\\nPYBOTTOKEN=$PYBOTTOKEN\" > /AnoPyBot/.env"
+          "echo -e \"IS_PROD=$IS_PROD\\nPOSTGRES_USER=$POSTGRES_USER\\nPOSTGRES_PASSWORD=$POSTGRES_PASSWORD\\nPOSTGRES_DB=$POSTGRES_DB\\nPOSTGRES_PORT=$POSTGRES_PORT\\nPYBOTTOKEN=$PYBOTTOKEN\\nPOSTGRES_DATA_MOUNT_LOCATION=$POSTGRES_DATA_MOUNT_LOCATION\\nLOG_MOUNT_LOCATION=$LOG_MOUNT_LOCATION\\nLAVALINK_PORT=$LAVALINK_PORT\\nLAVALINK_PASSWORD=$LAVALINK_PASSWORD\" > /AnoPyBot/.env"
         env:
           IS_PROD: ${{ vars.IS_PROD }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
@@ -73,9 +66,12 @@ jobs:
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
           PYBOTTOKEN: ${{ secrets.PYBOTTOKEN }}
+          POSTGRES_DATA_MOUNT_LOCATION: ${{ secrets.POSTGRES_DATA_MOUNT_LOCATION }}
+          LOG_MOUNT_LOCATION: ${{ secrets.LOG_MOUNT_LOCATION }}
+          LAVALLINK_PORT: ${{ secrets.LAVALINK_PORT }}
+          LAVALINK_PASSWORD: ${{ secrets.LAVALINK_PASWORD }}
 
       - name: Deploy to server
-        # Configure the ~./bash_profile and deploy.sh file on the Vagrantfile
         run: >
           ssh $SSH_USER@$SSH_HOST
           -i ~/.ssh/bot.key -o StrictHostKeyChecking=no

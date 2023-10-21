@@ -1,6 +1,7 @@
 import discord
 import lavalink
 import logger
+import os
 
 lavaClient: lavalink.Client = None
 
@@ -126,9 +127,9 @@ def setup(client: discord.Client):
     lavaClient = lavalink.Client(client.user.id)
     lavaClient.add_node(
         'lavalink',
-        2333,
-        'youshallnotpass',
-        'us',
+        int(os.getenv("LAVALINK_PORT", 2333)),
+        os.getenv("LAVALINK_PASSWORD", 'youshallnotpass'),
+        'eu',
         'default-node'
     )
     global channels
