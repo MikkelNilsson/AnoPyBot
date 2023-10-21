@@ -2,6 +2,7 @@ import enum
 import discord
 from typing import Optional
 import bot
+import logger
 
 class permission(enum.Enum):
     MAINTAINER = 0
@@ -62,7 +63,7 @@ class ContextCommand():
         self.args = msg.content.split(" ")[1:]
         self.rest = ( 
             msg.content.split(" ", 1)[1]
-            if len(self.args) > 1
+            if len(self.args) > 0
             else ""
         )
         
