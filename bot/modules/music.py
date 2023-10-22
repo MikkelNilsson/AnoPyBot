@@ -78,21 +78,16 @@ class Lava_Hook:
     async def event_hook(self, event: lavalink.events.Event):
         if isinstance(event, lavalink.events.QueueEndEvent):
             await self.queue_end(event)
-        elif isinstance(event, lavalink.events.TrackEndEvent):
-            await self.track_end(event)
         elif isinstance(event, lavalink.events.TrackStartEvent):
             await self.track_start(event)
-            
-    
+
+
     async def queue_end(self, event: lavalink.events.QueueEndEvent):
         guild_id = event.player.guild_id
         guild = self.bot.get_guild(guild_id)
         # This is not a text channel
         await channels.get_channel(guild_id).send('I have no more music to play...')
         await guild.voice_client.disconnect(force=True)
-
-    async def track_end(self, event: lavalink.events.TrackEndEvent):
-        logger.info(event.reason)
 
     async def track_start(self, event: lavalink.events.TrackStartEvent):
         await channels.get_channel(event.player.guild_id).send(
@@ -102,7 +97,7 @@ class Lava_Hook:
 
 class MusicTextChannel():
     channels: dict[int, discord.TextChannel]
-    
+
     def __init__(self):
         self.channels = dict()
 

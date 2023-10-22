@@ -9,9 +9,12 @@ from lavalink.filters import LowPass
 
 url_rx = re.compile(r'https?://(?:www\.)?.+')
 
+def get_player(ctx: Context) -> lavalink.DefaultPlayer:
+    return m_mod.lavaClient.player_manager.get(ctx.guild.id)
+
 async def _ensure_voice(ctx: Context):
     """ This check ensures that the bot and command author are in the same voicechannel. """
-    
+
     player: lavalink.PlayerManager = m_mod.lavaClient.player_manager.create(ctx.guild.id)
     # Create returns a player if one exists, otherwise creates.
     # This line is important because it ensures that a player always exists for a guild.
@@ -22,14 +25,13 @@ async def _ensure_voice(ctx: Context):
     # These are commands that require the bot to join a voicechannel (i.e. initiating playback).
     # Commands such as volume/skip etc don't require the bot to be in a voicechannel so don't need listing here.
     should_connect = ctx.command.command in ('play',)
-    
+
     if not ctx.author.voice or not ctx.author.voice.channel:
         # Our cog_command_error handler catches this and sends it to the voicechannel.
         # Exceptions allow us to "short-circuit" command invocation via checks so the
         # execution state of the command goes no further.
         if should_connect:
             raise CommandError('Join a voicechannel first.')
-        raise CommandError('Im not even playing...')
 
     v_client = ctx.voice_client
     if not v_client:
@@ -38,7 +40,7 @@ async def _ensure_voice(ctx: Context):
         permissions = ctx.author.voice.channel.permissions_for(ctx.guild.me)
 
         if not permissions.connect or not permissions.speak:  # Check user limit too?
-            raise CommandError('I need the `CONNECT` and `SPEAK` permissions.')
+            raise CommandError('I don\'t have permissions to join you :(')
 
         player.store('channel', ctx.channel.id)
         await ctx.author.voice.channel.connect(cls=m_mod.LavalinkVoiceClient, )
@@ -50,7 +52,7 @@ async def _ensure_voice(ctx: Context):
 @command("play", aliases=['p'], pre_hook=_ensure_voice)
 async def play(ctx: Context):
     """ Searches and plays a song from a given query. """
-    player = m_mod.lavaClient.player_manager.get(ctx.guild.id)
+    player = get_player(ctx)
     query = ctx.command.rest.strip('<>')
 
     if not url_rx.match(query):
@@ -79,7 +81,6 @@ async def play(ctx: Context):
         embed.title = 'Playlist Enqueued!'
         embed.description = f'{results.playlist_info.name} - {len(tracks)} tracks'
     else:
-        logger.info(results.load_type)
         track = results.tracks[0]
         embed.title = 'Track Enqueued'
         embed.description = f'[{track.title}]({track.uri})'
@@ -92,6 +93,24 @@ async def play(ctx: Context):
     # the current track.
     if not player.is_playing:
         await player.play()
+
+
+@command("skip", aliases=['next'], pre_hook=_ensure_voice)
+async def skip(ctx: Context):
+    player = get_player(ctx)
+    await ctx.reply(f"Skipping {player.current.title}")
+    await player.skip()
+
+
+@command("shuffle", pre_hook=_ensure_voice)
+async def shuffle(ctx: Context):
+    player = get_player(ctx)
+    player.shuffle = not player.shuffle
+    if player.shuffle:
+        await ctx.reply("Queue is been shuffled, repeat the command to unshuffle")
+    else:
+        await ctx.reply("Queue is not being shuffled anymore")
+
 
 # @command("lowpass", aliases=['lp'], pre_hook=_ensure_voice)
 # async def lowpass(ctx: Context):
@@ -144,4 +163,4 @@ async def disconnect(ctx: Context):
     channel = m_mod.channels.remove_channel(ctx.guild.id)
     # Disconnect from the voice channel.
     await ctx.voice_client.disconnect(force=True)
-    await channel.send('Okay... I\'ll leave')
+    await channel.send('Okay, I\'ll leave')
