@@ -3,7 +3,7 @@ services:
     image: mikkelnilsson/ano-py-bot:runtime
     build: ../bot
     command: bash -c "alembic upgrade head && python bot.py"
-    restart: always
+    restart: unless-stopped
     environment:
       - PYBOTTOKEN=${PYBOTTOKEN}
       - POSTGRES_USER=${POSTGRES_USER}
@@ -22,7 +22,7 @@ services:
       - ${LOG_MOUNT_LOCATION}:/app/logs
 
   lavalink:
-    image: ghcr.io/lavalink-devs/lavalink:3.7.8-alpine # pin the image version to Lavalink v4
+    image: ghcr.io/lavalink-devs/lavalink:4 # pin the image version to Lavalink v4
     container_name: lavalink
     restart: unless-stopped
     environment:
@@ -38,7 +38,7 @@ services:
 
   db:
     image: postgres:15-bullseye
-    restart: always
+    restart: unless-stopped
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
