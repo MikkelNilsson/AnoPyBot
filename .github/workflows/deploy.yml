@@ -69,7 +69,7 @@ jobs:
           POSTGRES_DATA_MOUNT_LOCATION: ${{ secrets.POSTGRES_DATA_MOUNT_LOCATION }}
           LOG_MOUNT_LOCATION: ${{ secrets.LOG_MOUNT_LOCATION }}
           LAVALLINK_PORT: ${{ secrets.LAVALINK_PORT }}
-          LAVALINK_PASSWORD: ${{ secrets.LAVALINK_PASWORD }}
+          LAVALINK_PASSWORD: ${{ secrets.LAVALINK_PASSWORD }}
 
       - name: Deploy to server
         run: >
