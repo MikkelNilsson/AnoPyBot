@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import Session as sql_session, sessionmaker
 
 from models import Server
 
@@ -12,14 +12,17 @@ def setup_database(connection_string):
     Session.configure(bind=engine)
 
 
-def get_server_data(db: Session, server_id: int) -> Server:
-    res = db.query(Server).where(Server.server_id == server_id).first()
+def _get_server_data(db: sql_session, server_id: int) -> Server:
+    res = db.query(Server).filter(Server.server_id == server_id).first()
     return res
 
+def get_server_data(server_id: int) -> Server:
+    with Session() as db:
+        return _get_server_data(db, server_id)
 
 def get_command_prefix_or_initiate(server_id):
     with Session() as db:
-        server = get_server_data(db, server_id)
+        server = _get_server_data(db, server_id)
         if not server:
             server = Server(server_id=server_id)
             db.add(server)
@@ -37,6 +40,6 @@ def update_prefix(server_id: int, prefix: str):
 
 def update_default_role(server_id: int, role: int):
     with Session() as db:
-        server_data = get_server_data(db, server_id)
+        server_data = _get_server_data(db, server_id)
         server_data.default_role = role
         db.commit()

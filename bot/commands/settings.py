@@ -26,4 +26,7 @@ async def set_default_role(ctx: schema.Context):
     else:
         crud.update_default_role(ctx.guild.id, role.id)
         logger.info(f'Updated default role for "{ctx.guild.name}" to "{role.name}"')
-        await ctx.reply(f'Successfully set the default role to "{role.name}"!')
+        await ctx.reply(
+            f'Successfully set the default role to **{role.name}**!\n' +
+            f'Make sure the **AnoBot** role is above the **{role.name}** in the servers role settings!'
+        )

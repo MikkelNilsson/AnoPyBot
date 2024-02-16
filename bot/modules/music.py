@@ -19,7 +19,7 @@ class LavalinkVoiceClient(discord.VoiceClient):
         # ensure a client already exists
         if not lavaClient:
             raise RuntimeError("Lavalink client is not set up");
-            
+
 
     async def on_voice_server_update(self, data):
         # the data needs to be transformed before being handed down to

@@ -1,6 +1,6 @@
 import discord
 import logger
-from modules import crud
+import modules.crud as crud
 from schema import (
     Command,
     permission,
@@ -24,7 +24,7 @@ class Handler:
             self.command_map = {}
             handler = self
             from commands import root
-        
+
 
     def get_command(self, name: str) -> Command:
         """Returns the command with the given name
@@ -77,7 +77,7 @@ def command(
 
         def decorated_function(*args, **kwargs):
             return func(*args, **kwargs)
-    
+
         return decorated_function
 
     return decorator_function
@@ -117,10 +117,6 @@ async def exec(message: discord.Message):
                     ):
                         raise CommandPermissionError()
 
-                # Pre command hook
-                if command.pre_hook:
-                    await command.pre_hook(ctx)
-                # Execute command
                 logger.info(
                     "Executing: "
                     + ctx.command.command
@@ -129,19 +125,24 @@ async def exec(message: discord.Message):
                     + '" for '
                     + ctx.author.name
                 )
+
+                # Pre command hook
+                if command.pre_hook:
+                    await command.pre_hook(ctx)
+                # Execute command
                 res = await command.method(ctx)
-                
+
                 # post command hook
                 if command.post_hook:
                     await command.post_hook(ctx, res)
-                
+
                 if res:
                     print(res)
 
             except CommandError as cmderr:
-                message.channel.send(cmderr.message)
+                await message.channel.send(cmderr.message)
             except CommandPermissionError:
-                message.channel.send("You do not have permission to execute this command.")
+                await message.channel.send("You do not have permission to execute this command.")
 
         else:
             await message.reply("Command not found")

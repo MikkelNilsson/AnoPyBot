@@ -12,7 +12,7 @@ class ConfigError(Exception):
 def load_config():
     prefix = str(Path(__file__).parent)
     load_prod = os.getenv("IS_PROD", "False").lower() == "true"
-    
+
     # load production config
     if load_prod:
         with open(prefix + "/config/config.yml", "r") as f:
@@ -21,7 +21,7 @@ def load_config():
     else:
         with open(prefix + "/config/config-development.yml", "r") as f:
             res = yaml.safe_load(f)
-    
+
     res["is_prod"] = load_prod
     return res
 
@@ -30,18 +30,18 @@ def config_startup(client):
     # add config to the client
     client.config = load_config()
 
-    # Setup logging    
+    # Setup logging
     if "logging" in client.config:
         logger.setup_logging(client.config["logging"])
     else:
         logger.setup_logging({"level": "info"})
-    
+
     logger.info(
         "Loaded Production Configuration"
         if client.config["is_prod"]
         else "Loaded Development Configuration"
     )
-    
+
     # Setup Database
     client.config["connection-string"] = client.config["connection-string"].format(
         user=os.environ["POSTGRES_USER"],

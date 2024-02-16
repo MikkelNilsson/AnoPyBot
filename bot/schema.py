@@ -11,7 +11,7 @@ class permission(enum.Enum):
 
 class CommandError(Exception):
     message: str
-    
+
     def __init__(self, msg: str) -> None:
         super().__init__()
         self.message = msg
@@ -61,12 +61,12 @@ class ContextCommand():
         self.command = command
         self.content = msg.content
         self.args = msg.content.split(" ")[1:]
-        self.rest = ( 
+        self.rest = (
             msg.content.split(" ", 1)[1]
             if len(self.args) > 0
             else ""
         )
-        
+
 
 class Context():
     command: ContextCommand
@@ -76,7 +76,7 @@ class Context():
     author: discord.User | discord.Member
     message: discord.Message
     bot: discord.Client
-    
+
     def __init__(self, msg: discord.Message, command: str, client: discord.Client):
         self.command = ContextCommand(msg, command)
         self.guild = msg.guild
@@ -85,10 +85,10 @@ class Context():
         self.message = msg
         self.voice_client = msg.guild.voice_client
         self.bot = client
-    
+
     async def reply(self, msg: str):
         await self.message.reply(msg)
-    
+
     def in_guild(self):
         return self.guild or False
 
