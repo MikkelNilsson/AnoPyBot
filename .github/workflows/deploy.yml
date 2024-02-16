@@ -52,7 +52,7 @@ jobs:
 
       - name: Copy remote_files directory to server
         run: |
-          scp -i ~/.ssh/bot.key -o StrictHostKeyChecking=no -r remote_files/* $SSH_USER@$SSH_HOST:/AnoPyBot/
+          scp -i ~/.ssh/bot.key -o StrictHostKeyChecking=no -r remote_files/. $SSH_USER@$SSH_HOST:/AnoPyBot/
 
       - name: Create .env file
         run: >  
