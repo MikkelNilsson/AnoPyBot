@@ -1,8 +1,7 @@
 import enum
 import discord
 from typing import Optional
-import bot
-import logger
+import re
 
 class permission(enum.Enum):
     MAINTAINER = 0
@@ -16,15 +15,19 @@ class CommandError(Exception):
         super().__init__()
         self.message = msg
 
-
-class CommandPermissionError(Exception):
+class CommandUsageError(CommandError):
     pass
+
+class CommandPermissionError(CommandError):
+    def __init__(self) -> None:
+        super().__init__("You do not have permission to execute this command.")
 
 
 class Command():
     method: callable
     name: str
     description: str
+    usage: str
     permissions: list[permission]
     aliases: list[str]
     in_guild: bool
@@ -36,6 +39,7 @@ class Command():
         method: callable,
         name: str,
         description: str = "",
+        usage: str = "",
         permissions: list[permission] = [],
         aliases: list[str] = [],
         in_guild: bool = True,
@@ -45,6 +49,7 @@ class Command():
         self.method = method
         self.name = name
         self.description = description
+        self.usage = usage
         self.permissions = permissions
         self.aliases = aliases
         self.in_guild = in_guild
@@ -52,6 +57,7 @@ class Command():
         self.post_hook = post_hook
 
 
+pattern = r"(\"[^\"]*\"|[^ ]+)"
 class ContextCommand():
     command: str
     rest: str
@@ -60,7 +66,7 @@ class ContextCommand():
     def __init__(self, msg: discord.Message, command: str) -> None:
         self.command = command
         self.content = msg.content
-        self.args = msg.content.split(" ")[1:]
+        self.args = re.findall(pattern, msg.content[len(command) + 2:])
         self.rest = (
             msg.content.split(" ", 1)[1]
             if len(self.args) > 0

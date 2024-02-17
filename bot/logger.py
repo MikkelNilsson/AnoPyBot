@@ -24,10 +24,10 @@ def setup_logging(log_config):
         "[{asctime}] [{levelname:<8}] {name}: {message}", dt_fmt, style="{"
     )
     handler.setFormatter(formatter)
-    
+
     std_err = logging.StreamHandler()
-    std_err.setFormatter(formatter) 
-      
+    std_err.setFormatter(formatter)
+
     discord_logger = logging.getLogger("discord")
     discord_logger.setLevel(level_dict["discord"])
     discord_logger.addHandler(handler)
@@ -40,10 +40,10 @@ def setup_logging(log_config):
     bot_logger = logging.Logger(name="AnoBot", level=level_dict["bot"])
     bot_logger.addHandler(handler)
     bot_logger.addHandler(std_err)
-    
+
     global Logger
     Logger = bot_logger
-    
+
     info("Logging setup: Done")
 
 def _get_logging_level_settings(level_config):
@@ -60,10 +60,10 @@ def _get_logging_level_settings(level_config):
     if type(level_config) == type(dict()):
         if "default" not in level_config:
             LogConfigError(f"no default logging level set")
-        
+
         res = defaultdict(lambda: levels[level_config["default"]])
         for k, v in level_config.items():
-            
+
             if v in levels.keys():
                 res[k] = levels[v]
             else:
@@ -72,7 +72,7 @@ def _get_logging_level_settings(level_config):
     else:
         if level_config in levels.keys():
             return defaultdict(lambda: levels[level_config])
-        
+
         raise LogConfigError(f"No default logging level called {level_config}")
 
 def debug(msg: str):

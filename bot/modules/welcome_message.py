@@ -33,5 +33,5 @@ async def send_welcome_message(member: discord.Member, server: models.Server):
         logger.warning(f"Invalid welcome channel for server {member.guild.name}")
 
 
-    message = str(server.welcome_message).replace("¤name¤", member.name)
+    message = str(server.welcome_message).replace("¤name¤", member.mention)
     await channel.send(message)

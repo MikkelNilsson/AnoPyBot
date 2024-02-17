@@ -43,3 +43,11 @@ def update_default_role(server_id: int, role: int):
         server_data = _get_server_data(db, server_id)
         server_data.default_role = role
         db.commit()
+
+
+def update_welcome_message(server_id: int, channel: int, message: str):
+    with Session() as db:
+        server_data = _get_server_data(db, server_id)
+        server_data.welcome_channel = channel
+        server_data.welcome_message = message
+        db.commit()

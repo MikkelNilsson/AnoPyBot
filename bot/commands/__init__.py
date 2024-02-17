@@ -6,7 +6,8 @@ from schema import (
     permission,
     Context,
     CommandError,
-    CommandPermissionError
+    CommandPermissionError,
+    CommandUsageError
 )
 
 handler = None
@@ -44,6 +45,7 @@ class Handler:
 def command(
     name: str,
     description: str = None,
+    usage: str = None,
     permissions: list[permission] = [],
     aliases: list[str] = [],
     in_guild: bool = True,
@@ -65,6 +67,7 @@ def command(
             method=func,
             name=name,
             description=description,
+            usage=usage,
             permissions=permissions,
             aliases=aliases,
             in_guild=in_guild,
@@ -105,17 +108,8 @@ async def exec(message: discord.Message):
                     raise CommandError("Command has to be executed in a server!")
 
                 # Check if user has permission to use command
-                for permission in command.permissions:
-                    if (
-                        permission is permission.ADMIN
-                        and not message.author.guild_permissions.administrator
-                    ):
-                        raise CommandPermissionError()
-                    if (
-                        permission is permission.MAINTAINER
-                        and message.author.id not in handler.owners
-                    ):
-                        raise CommandPermissionError()
+                if not has_permission(command_permissions=command.permissions, author=message.author):
+                    raise CommandPermissionError()
 
                 logger.info(
                     "Executing: "
@@ -139,10 +133,28 @@ async def exec(message: discord.Message):
                 if res:
                     print(res)
 
+            except CommandUsageError as cmderr:
+                await message.channel.send(
+                    (cmderr.message + "\n" if cmderr.message else "") +
+                    f"Usage: {prefix}{command.usage}"
+                )
             except CommandError as cmderr:
                 await message.channel.send(cmderr.message)
-            except CommandPermissionError:
-                await message.channel.send("You do not have permission to execute this command.")
 
         else:
             await message.reply("Command not found")
+
+
+def has_permission(command_permissions: list[permission], author: discord.Member):
+    for permission in command_permissions:
+        if (
+            permission is permission.ADMIN
+            and not author.guild_permissions.administrator
+        ):
+            return False
+        if (
+            permission is permission.MAINTAINER
+            and author.id not in handler.owners
+        ):
+            return False
+    return True
