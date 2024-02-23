@@ -8,6 +8,21 @@ class permission(enum.Enum):
     ADMIN = 1
 
 
+class CommandModules(enum.Enum):
+    SETTINGS = "Settings"
+    NEWUSER = "NewUser"
+    DEFAULTROLE = "DefaultRole"
+    WELCOMEMESSAGE = "WelcomeMessage"
+
+    def label(self):
+        return self.value
+
+    def __eq__(self, __value: object) -> bool:
+        if isinstance(__value, str):
+            return self.value.lower() == __value.lower()
+        return super().__eq__(__value)
+
+
 class CommandError(Exception):
     message: str
 
@@ -26,6 +41,7 @@ class CommandPermissionError(CommandError):
 class Command():
     method: callable
     name: str
+    modules: list[CommandModules]
     description: str
     usage: str
     permissions: list[permission]
@@ -38,6 +54,7 @@ class Command():
         self,
         method: callable,
         name: str,
+        modules: list[CommandModules],
         description: str = "",
         usage: str = "",
         permissions: list[permission] = [],
@@ -48,8 +65,9 @@ class Command():
     ) -> None:
         self.method = method
         self.name = name
+        self.modules = modules
         self.description = description
-        self.usage = usage
+        self.usage = usage if usage else name
         self.permissions = permissions
         self.aliases = aliases
         self.in_guild = in_guild

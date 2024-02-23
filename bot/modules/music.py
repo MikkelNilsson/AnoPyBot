@@ -4,31 +4,24 @@ import logger
 import os
 from schema import Context, CommandError
 
+# Inspiration from https://github.com/devoxin/Lavalink.py/blob/master/examples/music.py
+
 lavaClient: lavalink.Client = None
 
 def get_player(ctx: Context) -> lavalink.DefaultPlayer:
     return lavaClient.player_manager.get(ctx.guild.id)
 
 async def ensure_voice(ctx: Context):
-    """ This check ensures that the bot and command author are in the same voicechannel. """
+    """ This check ensures that the bot and command author are in the same Voicechannel. """
 
-    player: lavalink.PlayerManager = lavaClient.player_manager.create(ctx.guild.id)
-    # Create returns a player if one exists, otherwise creates.
-    # This line is important because it ensures that a player always exists for a guild.
+    # if it is already there, it will return the existing
+    player: lavalink.DefaultPlayer = lavaClient.player_manager.create(ctx.guild.id)
 
-    # Most people might consider this a waste of resources for guilds that aren't playing, but this is
-    # the easiest and simplest way of ensuring players are created.
-
-    # These are commands that require the bot to join a voicechannel (i.e. initiating playback).
-    # Commands such as volume/skip etc don't require the bot to be in a voicechannel so don't need listing here.
     should_connect = ctx.command.command in ('play',)
 
     if not ctx.author.voice or not ctx.author.voice.channel:
-        # Our cog_command_error handler catches this and sends it to the voicechannel.
-        # Exceptions allow us to "short-circuit" command invocation via checks so the
-        # execution state of the command goes no further.
         if should_connect:
-            raise CommandError('Join a voicechannel first.')
+            raise CommandError('Join a Voicechannel first.')
 
     v_client = ctx.voice_client
     if not v_client:
@@ -36,14 +29,14 @@ async def ensure_voice(ctx: Context):
             raise CommandError('Im not even playing...')
         permissions = ctx.author.voice.channel.permissions_for(ctx.guild.me)
 
-        if not permissions.connect or not permissions.speak:  # Check user limit too?
+        if not permissions.connect or not permissions.speak:
             raise CommandError('I don\'t have permissions to join you :(')
 
-        player.store('channel', ctx.channel.id)
+        player.store("channel", ctx.channel.id)
         await ctx.author.voice.channel.connect(cls=LavalinkVoiceClient)
     else:
         if v_client.channel.id != ctx.author.voice.channel.id:
-            raise CommandError('You need to be in my voicechannel.')
+            raise CommandError('You need to be in my Voicechannel.')
 
 
 class LavalinkVoiceClient(discord.VoiceClient):
@@ -59,7 +52,7 @@ class LavalinkVoiceClient(discord.VoiceClient):
         self.channel = channel
         # ensure a client already exists
         if not lavaClient:
-            raise RuntimeError("Lavalink client is not set up");
+            raise RuntimeError("Lavalink client is not set up")
 
 
     async def on_voice_server_update(self, data):
@@ -72,6 +65,14 @@ class LavalinkVoiceClient(discord.VoiceClient):
         await lavaClient.voice_update_handler(lavalink_data)
 
     async def on_voice_state_update(self, data):
+        channel_id = data['channel_id']
+
+        if not channel_id:
+            await self._destroy()
+            return
+
+        self.channel = self.client.get_channel(int(channel_id))
+
         # the data needs to be transformed before being handed down to
         # voice_update_handler
         lavalink_data = {
@@ -79,6 +80,7 @@ class LavalinkVoiceClient(discord.VoiceClient):
             'd': data
         }
         await lavaClient.voice_update_handler(lavalink_data)
+
 
     async def connect(self, *, timeout: float, reconnect: bool, self_deaf: bool = False, self_mute: bool = False) -> None:
         """
@@ -107,6 +109,9 @@ class LavalinkVoiceClient(discord.VoiceClient):
         # this must be done because the on_voice_state_update that would set channel_id
         # to None doesn't get dispatched after the disconnect
         player.channel_id = None
+        await self._destroy()
+
+    async def _destroy(self):
         self.cleanup()
 
 # Hooks
@@ -127,36 +132,17 @@ class Lava_Hook:
         guild_id = event.player.guild_id
         guild = self.bot.get_guild(guild_id)
         # This is not a text channel
-        await channels.get_channel(guild_id).send('I have no more music to play...')
+        await get_text_channel(event.player, guild).send('I have no more music to play...')
         await guild.voice_client.disconnect(force=True)
 
     async def track_start(self, event: lavalink.events.TrackStartEvent):
-        await channels.get_channel(event.player.guild_id).send(
+        await get_text_channel(event.player, self.bot.get_guild(event.player.guild_id)).send(
             'Now playing: ' + event.track.title + '\n' + event.track.uri
         )
 
 
-class MusicTextChannel():
-    channels: dict[int, discord.TextChannel]
-
-    def __init__(self):
-        self.channels = dict()
-
-    def add_channel(self, message: discord.Message) -> None:
-        self.channels[message.guild.id] = message.channel
-
-    def get_channel(self, guild_id: int) -> discord.TextChannel:
-        if guild_id in self.channels:
-            return self.channels[guild_id]
-        else:
-            RuntimeError(f"No music channel for {guild_id}")
-
-    def remove_channel(self, guild_id: int) -> discord.TextChannel:
-        res = self.channels[guild_id]
-        del self.channels[guild_id]
-        return res
-
-channels: MusicTextChannel = None
+def get_text_channel(player: lavalink.DefaultPlayer, guild: discord.Guild):
+    return guild.get_channel(player.fetch("channel"))
 
 def setup(client: discord.Client):
     global lavaClient
@@ -168,6 +154,4 @@ def setup(client: discord.Client):
         'eu',
         'default-node'
     )
-    global channels
-    channels = MusicTextChannel()
     Lava_Hook(client)

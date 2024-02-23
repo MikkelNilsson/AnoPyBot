@@ -7,7 +7,8 @@ from schema import (
     Context,
     CommandError,
     CommandPermissionError,
-    CommandUsageError
+    CommandUsageError,
+    CommandModules
 )
 
 handler = None
@@ -20,9 +21,10 @@ class Handler:
         if not handler:
             self.bot = client
             self.owners = owners
-            self.commands = {}
+            self.commands: dict[str, Command] = {}
             # command_map maps aliases to the command name
             self.command_map = {}
+            self.modules = set()
             handler = self
             from commands import root
 
@@ -44,6 +46,7 @@ class Handler:
 
 def command(
     name: str,
+    modules: list[CommandModules] = [],
     description: str = None,
     usage: str = None,
     permissions: list[permission] = [],
@@ -65,6 +68,7 @@ def command(
     def decorator_function(func):
         handler.commands[name] = Command(
             method=func,
+            modules=modules,
             name=name,
             description=description,
             usage=usage,
@@ -74,9 +78,12 @@ def command(
             pre_hook=pre_hook,
             post_hook=post_hook
         )
-        handler.command_map[name] = name
+        handler.command_map[name] = name.lower()
         for alias in aliases:
-            handler.command_map[alias] = name
+            handler.command_map[alias] = name.lower()
+
+        for module in modules:
+            handler.modules.add(module.lower())
 
         def decorated_function(*args, **kwargs):
             return func(*args, **kwargs)
@@ -93,7 +100,7 @@ async def exec(message: discord.Message):
         prefix = "!"
 
     # Check if message is a command
-    if message.content.startswith(prefix):
+    if message.content.startswith(prefix) or message.content.lower().startswith("!help"):
 
         # Get command and args
         cmd = message.content[len(prefix) :].split(" ", 1)

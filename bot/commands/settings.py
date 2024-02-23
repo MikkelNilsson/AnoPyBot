@@ -9,7 +9,8 @@ import modules.crud as crud
 import logger
 
 @command(
-    "setprefix",
+    "SetPrefix",
+    modules=["Settings"],
     permissions=[permission.ADMIN],
     aliases=["sp"],
     description="Sets the prefix to use for this server.",
@@ -25,7 +26,8 @@ async def set_prefix(ctx: Context):
 
 
 @command(
-    "setdefaultrole",
+    "SetDefaultRole",
+    modules=["NewUser", "DefaultRole"],
     permissions=[permission.ADMIN],
     description="Set the role which should be added to users that joins the server.",
     usage="setdefaultrole <@default_role>"
@@ -49,7 +51,8 @@ async def set_default_role(ctx: Context):
 
 
 @command(
-    "removedefaultrole",
+    "RemoveDefaultRole",
+    modules=["NewUser", "DefaultRole"],
     permissions=[permission.ADMIN],
     description="Removes the role applied to users who joins the server."
 )
@@ -59,7 +62,8 @@ async def remove_default_role(ctx: Context):
 
 
 @command(
-    "setwelcomemessage",
+    "SetWelcomeMessage",
+    modules=["newuser", "welcomemessage"],
     permissions=[permission.ADMIN],
     description="Sets the message sent when a new user joins the server.\nUse ¤name¤ to mention thenew user.\nThe message is everything within the \"_\", including line shifts.",
     usage="setwelcomemessage <#channel-to-send-the-message-in> \"<The message to be sent>\""
@@ -82,7 +86,8 @@ async def set_welcome_message(ctx: Context):
 
 
 @command(
-    "removewelcomemessage",
+    "RemoveWelcomeMessage",
+    modules=["newuser", "welcomemessage"],
     permissions=[permission.ADMIN],
     description="Removes the welcome message for the server."
 )

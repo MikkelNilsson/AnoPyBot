@@ -1,15 +1,23 @@
-from commands import command, CommandError, Context
+from commands import command, Context, CommandError
 import lavalink
 import discord
 import re
 import modules.music as m_mod
 import logger
 from lavalink.filters import LowPass
+from lavalink.server import LoadType
 
 
 url_rx = re.compile(r'https?://(?:www\.)?.+')
 
-@command("play", aliases=['p'], pre_hook=m_mod.ensure_voice)
+@command(
+    "Play",
+    modules=["Music"],
+    aliases=['p'],
+    pre_hook=m_mod.ensure_voice,
+    usage="play <phrase or link>",
+    description="playes music for a voicechannel. Play from youtube or soundcloud."
+)
 async def play(ctx: Context):
     """ Searches and plays a song from a given query. """
     player = m_mod.get_player(ctx)
@@ -31,7 +39,7 @@ async def play(ctx: Context):
     #   SEARCH_RESULT   - query prefixed with either ytsearch: or scsearch:.
     #   NO_MATCHES      - query yielded no results
     #   LOAD_FAILED     - most likely, the video encountered an exception during loading.
-    if results.load_type == 'PLAYLIST_LOADED':
+    if results.load_type == LoadType.PLAYLIST:
         tracks = results.tracks
 
         for track in tracks:
@@ -40,29 +48,46 @@ async def play(ctx: Context):
 
         embed.title = 'Playlist Enqueued!'
         embed.description = f'{results.playlist_info.name} - {len(tracks)} tracks'
-    else:
+    elif results.load_type in [LoadType.TRACK, LoadType.SEARCH]:
         track = results.tracks[0]
         embed.title = 'Track Enqueued'
         embed.description = f'[{track.title}]({track.uri})'
 
         player.add(requester=ctx.author.id, track=track)
+    else:
+        #TODO Check if this works...
+        if results.load_type == LoadType.EMPTY:
+            msg = "Empty response"
+        elif results.load_type == LoadType.ERROR:
+            msg = results.error.message + "---" + results.error.cause
+        raise CommandError(f"Error occured: {msg}")
 
     await ctx.channel.send(embed=embed)
-    m_mod.channels.add_channel(ctx.message)
     # We don't want to call .play() if the player is playing as that will effectively skip
     # the current track.
     if not player.is_playing:
         await player.play()
 
 
-@command("skip", aliases=['next'], pre_hook=m_mod.ensure_voice)
+@command(
+    "Skip",
+    modules=["Music"],
+    aliases=['next'],
+    pre_hook=m_mod.ensure_voice,
+    description="Skips the current song."
+)
 async def skip(ctx: Context):
     player = m_mod.get_player(ctx)
     await ctx.reply(f"Skipping {player.current.title}")
     await player.skip()
 
 
-@command("shuffle", pre_hook=m_mod.ensure_voice)
+@command(
+    "Shuffle",
+    modules=["Music"],
+    pre_hook=m_mod.ensure_voice,
+    description="Shuffles the queue. Note, it's a toggle, so to ushuffle repeat the command."
+)
 async def shuffle(ctx: Context):
     player = m_mod.get_player(ctx)
     player.shuffle = not player.shuffle
@@ -104,7 +129,13 @@ async def shuffle(ctx: Context):
 #     await ctx.channel.send(embed=embed)
 
 
-@command("leave", aliases=['dc', 'disconnect'])
+@command(
+    "Leave",
+    modules=["Music"],
+    aliases=['dc', 'disconnect'],
+    pre_hook=m_mod.ensure_voice,
+    description="The bot disconnects from the voicechannel."
+)
 async def disconnect(ctx: Context):
     """ Disconnects the player from the voice channel and clears its queue. """
     player = m_mod.lavaClient.player_manager.get(ctx.guild.id)
@@ -120,7 +151,7 @@ async def disconnect(ctx: Context):
     player.queue.clear()
     # Stop the current track so Lavalink consumes less resources.
     await player.stop()
-    channel = m_mod.channels.remove_channel(ctx.guild.id)
+
     # Disconnect from the voice channel.
     await ctx.voice_client.disconnect(force=True)
     await channel.send('Okay, I\'ll leave')

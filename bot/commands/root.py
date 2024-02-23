@@ -1,18 +1,17 @@
 from commands import (
     command,
     settings,
-    music
+    music,
+    help
 )
 import schema
 
-@command("random", aliases=["rand"])
+
+@command("Random", aliases=["rand"])
 async def random_command(ctx: schema.Context):
     await ctx.reply("Hello World!")
 
-@command("rando", permissions=[schema.permission.MAINTAINER], aliases=["ran"])
+
+@command("Rando", permissions=[schema.permission.MAINTAINER], aliases=["ran"])
 async def random_command(ctx: schema.Context):
     await ctx.reply("Hello World!" + " " + ctx.command.rest)
-
-
-
-
