@@ -17,7 +17,7 @@ async def ensure_voice(ctx: Context):
     # if it is already there, it will return the existing
     player: lavalink.DefaultPlayer = lavaClient.player_manager.create(ctx.guild.id)
 
-    should_connect = ctx.command.command in ('play',)
+    should_connect = ctx.command.command.lower() in ('play',)
 
     if not ctx.author.voice or not ctx.author.voice.channel:
         if should_connect:

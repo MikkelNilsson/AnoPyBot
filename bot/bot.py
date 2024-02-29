@@ -25,8 +25,9 @@ class BotClient(discord.Client):
         if (
             "replay-messages" in self.config["discord"] and self.config["discord"]["replay-messages"]
         ):
+            channel = (f"{message.guild.name}/{message.channel.name}" if message.guild else "Direct Message")
             logger.info(
-                f"{message.guild.name}/{message.channel.name} - {message.author}: {message.content}"
+                f"{channel} - {message.author}: {message.content}"
             )
         await commands.exec(message)
 

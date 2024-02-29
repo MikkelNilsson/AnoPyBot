@@ -6,16 +6,17 @@ import modules.music as m_mod
 import logger
 from lavalink.filters import LowPass
 from lavalink.server import LoadType
+from schema import CommandModule
 
 
 url_rx = re.compile(r'https?://(?:www\.)?.+')
 
 @command(
     "Play",
-    modules=["Music"],
+    modules=[CommandModule.MUSIC],
     aliases=['p'],
     pre_hook=m_mod.ensure_voice,
-    usage="play <phrase or link>",
+    usage="play phrase_or_link",
     description="playes music for a voicechannel. Play from youtube or soundcloud."
 )
 async def play(ctx: Context):
@@ -28,17 +29,8 @@ async def play(ctx: Context):
 
     results = await player.node.get_tracks(query)
 
-    if not results or not results.tracks:
-        return await ctx.channel.send('Nothing found!')
+    embed = discord.Embed(color=discord.Color.from_rgb(255, 255, 255))
 
-    embed = discord.Embed(color=discord.Color.blurple())
-
-    # Valid loadTypes are:
-    #   TRACK_LOADED    - single video/direct URL)
-    #   PLAYLIST_LOADED - direct URL to playlist)
-    #   SEARCH_RESULT   - query prefixed with either ytsearch: or scsearch:.
-    #   NO_MATCHES      - query yielded no results
-    #   LOAD_FAILED     - most likely, the video encountered an exception during loading.
     if results.load_type == LoadType.PLAYLIST:
         tracks = results.tracks
 
@@ -55,12 +47,13 @@ async def play(ctx: Context):
 
         player.add(requester=ctx.author.id, track=track)
     else:
-        #TODO Check if this works...
+        log_msg = ""
         if results.load_type == LoadType.EMPTY:
-            msg = "Empty response"
+            msg = "No songs found. Try changing the search phrase."
         elif results.load_type == LoadType.ERROR:
-            msg = results.error.message + "---" + results.error.cause
-        raise CommandError(f"Error occured: {msg}")
+            msg = "An error occured :("
+            log_msg = results.error.message + "---" + results.error.cause
+        raise CommandError(msg, log=(f"Error occured: {log_msg}" if log_msg else None))
 
     await ctx.channel.send(embed=embed)
     # We don't want to call .play() if the player is playing as that will effectively skip
@@ -71,8 +64,8 @@ async def play(ctx: Context):
 
 @command(
     "Skip",
-    modules=["Music"],
-    aliases=['next'],
+    modules=[CommandModule.MUSIC],
+    aliases=['Next'],
     pre_hook=m_mod.ensure_voice,
     description="Skips the current song."
 )
@@ -84,7 +77,7 @@ async def skip(ctx: Context):
 
 @command(
     "Shuffle",
-    modules=["Music"],
+    modules=[CommandModule.MUSIC],
     pre_hook=m_mod.ensure_voice,
     description="Shuffles the queue. Note, it's a toggle, so to ushuffle repeat the command."
 )
@@ -131,7 +124,7 @@ async def shuffle(ctx: Context):
 
 @command(
     "Leave",
-    modules=["Music"],
+    modules=[CommandModule.MUSIC],
     aliases=['dc', 'disconnect'],
     pre_hook=m_mod.ensure_voice,
     description="The bot disconnects from the voicechannel."
@@ -154,4 +147,4 @@ async def disconnect(ctx: Context):
 
     # Disconnect from the voice channel.
     await ctx.voice_client.disconnect(force=True)
-    await channel.send('Okay, I\'ll leave')
+    await ctx.channel.send('Okay, I\'ll leave')

@@ -3,12 +3,12 @@ import logger
 import modules.crud as crud
 from schema import (
     Command,
-    permission,
+    Permission,
     Context,
     CommandError,
     CommandPermissionError,
     CommandUsageError,
-    CommandModules
+    CommandModule
 )
 
 handler = None
@@ -24,7 +24,6 @@ class Handler:
             self.commands: dict[str, Command] = {}
             # command_map maps aliases to the command name
             self.command_map = {}
-            self.modules = set()
             handler = self
             from commands import root
 
@@ -46,10 +45,10 @@ class Handler:
 
 def command(
     name: str,
-    modules: list[CommandModules] = [],
+    modules: list[CommandModule] = [],
     description: str = None,
     usage: str = None,
-    permissions: list[permission] = [],
+    permissions: list[Permission] = [],
     aliases: list[str] = [],
     in_guild: bool = True,
     pre_hook: callable = None,
@@ -66,7 +65,7 @@ def command(
     """
 
     def decorator_function(func):
-        handler.commands[name] = Command(
+        handler.commands[name.lower()] = Command(
             method=func,
             modules=modules,
             name=name,
@@ -78,12 +77,9 @@ def command(
             pre_hook=pre_hook,
             post_hook=post_hook
         )
-        handler.command_map[name] = name.lower()
+        handler.command_map[name.lower()] = name.lower()
         for alias in aliases:
-            handler.command_map[alias] = name.lower()
-
-        for module in modules:
-            handler.modules.add(module.lower())
+            handler.command_map[alias.lower()] = name.lower()
 
         def decorated_function(*args, **kwargs):
             return func(*args, **kwargs)
@@ -99,16 +95,18 @@ async def exec(message: discord.Message):
     else:
         prefix = "!"
 
+    cmd_message = (prefix + message.content[1:] if message.content.lower().startswith("!help") else message.content).strip()
     # Check if message is a command
-    if message.content.startswith(prefix) or message.content.lower().startswith("!help"):
+    if cmd_message.startswith(prefix):
 
         # Get command and args
-        cmd = message.content[len(prefix) :].split(" ", 1)
-        command: Command = handler.get_command(cmd[0].lower())
+        no_prefix_message = cmd_message[len(prefix):]
+        cmd = no_prefix_message.split(" ", 1)[0]
+        command: Command = handler.get_command(cmd.lower())
 
         # Check if command exists
         if command:
-            ctx: Context = Context(message, command.name, handler.bot)
+            ctx: Context = Context(message, no_prefix_message, cmd, handler.bot)
 
             try:
                 if command.in_guild and not ctx.in_guild():
@@ -119,12 +117,12 @@ async def exec(message: discord.Message):
                     raise CommandPermissionError()
 
                 logger.info(
-                    "Executing: "
-                    + ctx.command.command
-                    + ' with args: "'
-                    + ctx.command.rest
-                    + '" for '
-                    + ctx.author.name
+                    "Executing: " +
+                    ctx.command.command +
+                    ' with args: "' +
+                    ctx.command.rest +
+                    '" for ' +
+                    ctx.author.name
                 )
 
                 # Pre command hook
@@ -141,26 +139,30 @@ async def exec(message: discord.Message):
                     print(res)
 
             except CommandUsageError as cmderr:
-                await message.channel.send(
+                if cmderr.log:
+                    logger.warning(cmderr.log)
+                await message.reply(
                     (cmderr.message + "\n" if cmderr.message else "") +
-                    f"Usage: {prefix}{command.usage}"
+                    f"Usage: `{prefix}{command.usage_str()}`"
                 )
             except CommandError as cmderr:
-                await message.channel.send(cmderr.message)
+                if cmderr.log:
+                    logger.warning(cmderr.log)
+                await message.reply(cmderr.message)
 
         else:
             await message.reply("Command not found")
 
 
-def has_permission(command_permissions: list[permission], author: discord.Member):
+def has_permission(command_permissions: list[Permission], author: discord.Member | discord.User):
     for permission in command_permissions:
         if (
-            permission is permission.ADMIN
+            isinstance(author, discord.Member) and permission == permission.ADMIN
             and not author.guild_permissions.administrator
         ):
             return False
         if (
-            permission is permission.MAINTAINER
+            permission == permission.MAINTAINER
             and author.id not in handler.owners
         ):
             return False

@@ -21,7 +21,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2 
+        uses: actions/checkout@v2
 
       - name: Login to Docker Hub
         uses: docker/login-action@v1
@@ -55,7 +55,7 @@ jobs:
           scp -i ~/.ssh/bot.key -o StrictHostKeyChecking=no -r remote_files/ $SSH_USER@$SSH_HOST:/AnoPyBot/
 
       - name: Create .env file
-        run: >  
+        run: >
           ssh $SSH_USER@$SSH_HOST
           -i ~/.ssh/bot.key -o StrictHostKeyChecking=no
           "echo -e \"IS_PROD=$IS_PROD\\nPOSTGRES_USER=$POSTGRES_USER\\nPOSTGRES_PASSWORD=$POSTGRES_PASSWORD\\nPOSTGRES_DB=$POSTGRES_DB\\nPOSTGRES_PORT=$POSTGRES_PORT\\nPYBOTTOKEN=$PYBOTTOKEN\\nPOSTGRES_DATA_MOUNT_LOCATION=$POSTGRES_DATA_MOUNT_LOCATION\\nLOG_MOUNT_LOCATION=$LOG_MOUNT_LOCATION\\nLAVALINK_PORT=$LAVALINK_PORT\\nLAVALINK_PASSWORD=$LAVALINK_PASSWORD\\nYOUTUBE_EMAIL=$YOUTUBE_EMAIL\\nYOUTUBE_PASSWORD=$YOUTUBE_PASSWORD\" > /AnoPyBot/remote_files/.env"

@@ -1,7 +1,7 @@
 """Added servers table
 
 Revision ID: 6b2f1eb1fcf4
-Revises: 
+Revises:
 Create Date: 2023-06-13 21:52:34.678474
 
 """

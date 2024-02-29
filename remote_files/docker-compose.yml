@@ -29,6 +29,8 @@ services:
       - _JAVA_OPTIONS=-Xmx6G # set Java options here
       - SERVER_PORT=${LAVALINK_PORT} # set lavalink server port
       - LAVALINK_SERVER_PASSWORD=${LAVALINK_PASSWORD} # set password for lavalink
+      - LAVALINK_SERVER_YOUTUBE_CONFIG_EMAIL=${YOUTUBE_EMAIL}
+      - LAVALINK_SERVER_YOUTUBE_CONFIG_PASSWORD=${YOUTUBE_PASSWORD}
     ports:
       - ${LAVALINK_PORT}:${LAVALINK_PORT}
     volumes:

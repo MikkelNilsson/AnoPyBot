@@ -1,18 +1,19 @@
 import enum
 import discord
-from typing import Optional
+from typing import Any, Optional
 import re
 
-class permission(enum.Enum):
+class Permission(enum.Enum):
     MAINTAINER = 0
     ADMIN = 1
 
 
-class CommandModules(enum.Enum):
+class CommandModule(enum.Enum):
     SETTINGS = "Settings"
     NEWUSER = "NewUser"
     DEFAULTROLE = "DefaultRole"
     WELCOMEMESSAGE = "WelcomeMessage"
+    MUSIC = "Music"
 
     def label(self):
         return self.value
@@ -22,13 +23,14 @@ class CommandModules(enum.Enum):
             return self.value.lower() == __value.lower()
         return super().__eq__(__value)
 
-
 class CommandError(Exception):
     message: str
+    log: str
 
-    def __init__(self, msg: str) -> None:
+    def __init__(self, msg: str, log: str = None) -> None:
         super().__init__()
         self.message = msg
+        self.log = log
 
 class CommandUsageError(CommandError):
     pass
@@ -41,10 +43,10 @@ class CommandPermissionError(CommandError):
 class Command():
     method: callable
     name: str
-    modules: list[CommandModules]
+    modules: list[CommandModule]
     description: str
     usage: str
-    permissions: list[permission]
+    permissions: list[Permission]
     aliases: list[str]
     in_guild: bool
     pre_hook: Optional[callable]
@@ -54,10 +56,10 @@ class Command():
         self,
         method: callable,
         name: str,
-        modules: list[CommandModules],
+        modules: list[CommandModule],
         description: str = "",
         usage: str = "",
-        permissions: list[permission] = [],
+        permissions: list[Permission] = [],
         aliases: list[str] = [],
         in_guild: bool = True,
         pre_hook: Optional[callable] = None,
@@ -67,12 +69,15 @@ class Command():
         self.name = name
         self.modules = modules
         self.description = description
-        self.usage = usage if usage else name
+        self.usage = usage
         self.permissions = permissions
         self.aliases = aliases
         self.in_guild = in_guild
         self.pre_hook = pre_hook
         self.post_hook = post_hook
+
+    def usage_str(self) -> str:
+        return f"{self.name.lower()}" + (f" {self.usage}" if self.usage else "")
 
 
 pattern = r"(\"[^\"]*\"|[^ ]+)"
@@ -81,12 +86,12 @@ class ContextCommand():
     rest: str
     args: list[str]
 
-    def __init__(self, msg: discord.Message, command: str) -> None:
+    def __init__(self, np_message: str, command: str) -> None:
         self.command = command
-        self.content = msg.content
-        self.args = re.findall(pattern, msg.content[len(command) + 2:])
+        self.content = np_message.strip()
+        self.args = re.findall(pattern, np_message[len(command) + 1:].strip())
         self.rest = (
-            msg.content.split(" ", 1)[1]
+            np_message.strip().split(" ", 1)[1]
             if len(self.args) > 0
             else ""
         )
@@ -101,20 +106,20 @@ class Context():
     message: discord.Message
     bot: discord.Client
 
-    def __init__(self, msg: discord.Message, command: str, client: discord.Client):
-        self.command = ContextCommand(msg, command)
+    def __init__(self, msg: discord.Message, np_message: str, command: str, client: discord.Client):
+        self.command = ContextCommand(np_message, command)
         self.guild = msg.guild
         self.channel = msg.channel
         self.author = msg.author
         self.message = msg
-        self.voice_client = msg.guild.voice_client
+        self.voice_client = msg.guild.voice_client if msg.guild else None
         self.bot = client
 
     async def reply(self, msg: str):
         await self.message.reply(msg)
 
     def in_guild(self):
-        return self.guild or False
+        return bool(self.guild)
 
-    async def send(self, msg: str, embed: discord.Embed = None):
+    async def send(self, msg: str = None, embed: discord.Embed = None):
         await self.channel.send(msg, embed=embed)
