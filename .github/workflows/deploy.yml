@@ -50,33 +50,34 @@ jobs:
         env:
           SSH_KEY: ${{ secrets.SSH_KEY }}
 
+      - name: Create .env file
+        run: |
+          python create_env_file.py && scp -i ~/.ssh/bot.key -o StrictHostKeyChecking=no .env $SSH_USER@$SSH_HOST:$ENV_LOCATION
+        env:
+          anobot_IS_PROD: ${{ vars.IS_PROD }}
+          anobot_POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          anobot_POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          anobot_POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          anobot_POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+          anobot_PYBOTTOKEN: ${{ secrets.PYBOTTOKEN }}
+          anobot_POSTGRES_DATA_MOUNT_LOCATION: ${{ secrets.POSTGRES_DATA_MOUNT_LOCATION }}
+          anobot_LOG_MOUNT_LOCATION: ${{ secrets.LOG_MOUNT_LOCATION }}
+          anobot_LAVALINK_PORT: ${{ secrets.LAVALINK_PORT }}
+          anobot_LAVALINK_PASSWORD: ${{ secrets.LAVALINK_PASSWORD }}
+          anobot_YOUTUBE_EMAIL: ${{ secrets.YOUTUBE_EMAIL }}
+          anobot_YOUTUBE_PASSWORD: ${{ secrets.YOUTUBE_PASSWORD }}
+          ENV_LOCATION: "/AnoPyBot/"
+
       - name: Copy remote_files directory to server
         run: |
           scp -i ~/.ssh/bot.key -o StrictHostKeyChecking=no -r remote_files/ $SSH_USER@$SSH_HOST:/AnoPyBot/
-
-      - name: Create .env file
-        run: >
-          ssh $SSH_USER@$SSH_HOST
-          -i ~/.ssh/bot.key -o StrictHostKeyChecking=no
-          "echo -e \"IS_PROD=$IS_PROD\\nPOSTGRES_USER=$POSTGRES_USER\\nPOSTGRES_PASSWORD=$POSTGRES_PASSWORD\\nPOSTGRES_DB=$POSTGRES_DB\\nPOSTGRES_PORT=$POSTGRES_PORT\\nPYBOTTOKEN=$PYBOTTOKEN\\nPOSTGRES_DATA_MOUNT_LOCATION=$POSTGRES_DATA_MOUNT_LOCATION\\nLOG_MOUNT_LOCATION=$LOG_MOUNT_LOCATION\\nLAVALINK_PORT=$LAVALINK_PORT\\nLAVALINK_PASSWORD=$LAVALINK_PASSWORD\\nYOUTUBE_EMAIL=$YOUTUBE_EMAIL\\nYOUTUBE_PASSWORD=$YOUTUBE_PASSWORD\" > /AnoPyBot/remote_files/.env"
-        env:
-          IS_PROD: ${{ vars.IS_PROD }}
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
-          PYBOTTOKEN: ${{ secrets.PYBOTTOKEN }}
-          POSTGRES_DATA_MOUNT_LOCATION: ${{ secrets.POSTGRES_DATA_MOUNT_LOCATION }}
-          LOG_MOUNT_LOCATION: ${{ secrets.LOG_MOUNT_LOCATION }}
-          LAVALINK_PORT: ${{ secrets.LAVALINK_PORT }}
-          LAVALINK_PASSWORD: ${{ secrets.LAVALINK_PASSWORD }}
 
       - name: Deploy to server
         run: >
           ssh $SSH_USER@$SSH_HOST
           -i ~/.ssh/bot.key -o StrictHostKeyChecking=no
           "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD;
-          cd /AnoPyBot/remote_files; /AnoPyBot/remote_files/deploy.sh"
+          cp -r /AnoPyBot/remote_files/* /AnoPyBot/ && cd /AnoPyBot/ && /AnoPyBot/deploy.sh"
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
