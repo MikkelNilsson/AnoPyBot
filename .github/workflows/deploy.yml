@@ -66,28 +66,12 @@ jobs:
           anobot_LAVALINK_PASSWORD: ${{ secrets.LAVALINK_PASSWORD }}
           anobot_YOUTUBE_EMAIL: ${{ secrets.YOUTUBE_EMAIL }}
           anobot_YOUTUBE_PASSWORD: ${{ secrets.YOUTUBE_PASSWORD }}
+          anobot_TEST: "Sucess!"
           ENV_LOCATION: "/AnoPyBot/"
 
       - name: Copy remote_files directory to server
         run: |
           scp -i ~/.ssh/bot.key -o StrictHostKeyChecking=no -r remote_files/ $SSH_USER@$SSH_HOST:/AnoPyBot/
-
-      - name: Create .env file
-        run: >
-          ssh $SSH_USER@$SSH_HOST
-          -i ~/.ssh/bot.key -o StrictHostKeyChecking=no
-          "echo -e \"IS_PROD=$IS_PROD\\nPOSTGRES_USER=$POSTGRES_USER\\nPOSTGRES_PASSWORD=$POSTGRES_PASSWORD\\nPOSTGRES_DB=$POSTGRES_DB\\nPOSTGRES_PORT=$POSTGRES_PORT\\nPYBOTTOKEN=$PYBOTTOKEN\\nPOSTGRES_DATA_MOUNT_LOCATION=$POSTGRES_DATA_MOUNT_LOCATION\\nLOG_MOUNT_LOCATION=$LOG_MOUNT_LOCATION\\nLAVALINK_PORT=$LAVALINK_PORT\\nLAVALINK_PASSWORD=$LAVALINK_PASSWORD\" > /AnoPyBot/remote_files/1.env"
-        env:
-          IS_PROD: ${{ vars.IS_PROD }}
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
-          PYBOTTOKEN: ${{ secrets.PYBOTTOKEN }}
-          POSTGRES_DATA_MOUNT_LOCATION: ${{ secrets.POSTGRES_DATA_MOUNT_LOCATION }}
-          LOG_MOUNT_LOCATION: ${{ secrets.LOG_MOUNT_LOCATION }}
-          LAVALINK_PORT: ${{ secrets.LAVALINK_PORT }}
-          LAVALINK_PASSWORD: ${{ secrets.LAVALINK_PASSWORD }}
 
       - name: Deploy to server
         run: >
