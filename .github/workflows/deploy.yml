@@ -52,7 +52,7 @@ jobs:
 
       - name: Create .env file
         run: |
-          python create_env_file.py && scp -i ~/.ssh/boy.key -o StrictHostKeyChecking=no .env $SSH_USER@$SSH_HOST:$ENV_LOCATION
+          python create_env_file.py && scp -i ~/.ssh/bot.key -o StrictHostKeyChecking=no .env $SSH_USER@$SSH_HOST:$ENV_LOCATION
         env:
           anobot_IS_PROD: ${{ vars.IS_PROD }}
           anobot_POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
