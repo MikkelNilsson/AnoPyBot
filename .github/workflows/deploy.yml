@@ -50,6 +50,25 @@ jobs:
         env:
           SSH_KEY: ${{ secrets.SSH_KEY }}
 
+      - name: Make envfile
+        uses: SpicyPizza/create-envfile@v2.0
+        with:
+          envkey_IS_PROD: ${{ vars.IS_PROD }}
+          envkey_POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          envkey_POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          envkey_POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          envkey_POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+          envkey_PYBOTTOKEN: ${{ secrets.PYBOTTOKEN }}
+          envkey_POSTGRES_DATA_MOUNT_LOCATION: ${{ secrets.POSTGRES_DATA_MOUNT_LOCATION }}
+          envkey_LOG_MOUNT_LOCATION: ${{ secrets.LOG_MOUNT_LOCATION }}
+          envkey_LAVALINK_PORT: ${{ secrets.LAVALINK_PORT }}
+          envkey_LAVALINK_PASSWORD: ${{ secrets.LAVALINK_PASSWORD }}
+          envkey_YOUTUBE_EMAIL: ${{ secrets.YOUTUBE_EMAIL }}
+          envkey_YOUTUBE_PASSWORD: ${{ secrets.YOUTUBE_PASSWORD }}
+          directory: "./remote_files/"
+          fail_on_empty: true
+          sort_keys: true
+
       - name: Copy remote_files directory to server
         run: |
           scp -i ~/.ssh/bot.key -o StrictHostKeyChecking=no -r remote_files/ $SSH_USER@$SSH_HOST:/AnoPyBot/
@@ -58,7 +77,7 @@ jobs:
         run: >  
           ssh $SSH_USER@$SSH_HOST
           -i ~/.ssh/bot.key -o StrictHostKeyChecking=no
-          "echo -e \"IS_PROD=$IS_PROD\\nPOSTGRES_USER=$POSTGRES_USER\\nPOSTGRES_PASSWORD=$POSTGRES_PASSWORD\\nPOSTGRES_DB=$POSTGRES_DB\\nPOSTGRES_PORT=$POSTGRES_PORT\\nPYBOTTOKEN=$PYBOTTOKEN\\nPOSTGRES_DATA_MOUNT_LOCATION=$POSTGRES_DATA_MOUNT_LOCATION\\nLOG_MOUNT_LOCATION=$LOG_MOUNT_LOCATION\\nLAVALINK_PORT=$LAVALINK_PORT\\nLAVALINK_PASSWORD=$LAVALINK_PASSWORD\" > /AnoPyBot/remote_files/.env"
+          "echo -e \"IS_PROD=$IS_PROD\\nPOSTGRES_USER=$POSTGRES_USER\\nPOSTGRES_PASSWORD=$POSTGRES_PASSWORD\\nPOSTGRES_DB=$POSTGRES_DB\\nPOSTGRES_PORT=$POSTGRES_PORT\\nPYBOTTOKEN=$PYBOTTOKEN\\nPOSTGRES_DATA_MOUNT_LOCATION=$POSTGRES_DATA_MOUNT_LOCATION\\nLOG_MOUNT_LOCATION=$LOG_MOUNT_LOCATION\\nLAVALINK_PORT=$LAVALINK_PORT\\nLAVALINK_PASSWORD=$LAVALINK_PASSWORD\" > /AnoPyBot/remote_files/1.env"
         env:
           IS_PROD: ${{ vars.IS_PROD }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
