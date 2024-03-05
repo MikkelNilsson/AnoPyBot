@@ -1,23 +1,27 @@
 from commands import command
 from schema import (
-    permission,
+    Permission,
     Context,
     CommandError,
-    CommandUsageError
+    CommandUsageError,
+    CommandModule
 )
 import modules.crud as crud
 import logger
 
 @command(
-    "setprefix",
-    permissions=[permission.ADMIN],
+    "SetPrefix",
+    modules=[CommandModule.SETTINGS],
+    permissions=[Permission.ADMIN],
     aliases=["sp"],
     description="Sets the prefix to use for this server.",
-    usage="setprefix <prefix>"
+    usage="prefix"
 )
 async def set_prefix(ctx: Context):
     if ctx.command.args and len(ctx.command.args) > 0:
         new_prefix = ctx.command.args[0]
+        if len(new_prefix) > 10:
+            raise CommandError("Prefix can at max be 10 characters long, and must not be mentions.")
         crud.update_prefix(ctx.guild.id, new_prefix)
         await ctx.reply(f"Prefix updated to {new_prefix}")
     else:
@@ -25,10 +29,11 @@ async def set_prefix(ctx: Context):
 
 
 @command(
-    "setdefaultrole",
-    permissions=[permission.ADMIN],
+    "SetDefaultRole",
+    modules=[CommandModule.NEWUSER, CommandModule.DEFAULTROLE],
+    permissions=[Permission.ADMIN],
     description="Set the role which should be added to users that joins the server.",
-    usage="setdefaultrole <@default_role>"
+    usage="@default_role"
 )
 async def set_default_role(ctx: Context):
     if not ctx.command.args or len(ctx.command.args) == 0:
@@ -49,8 +54,9 @@ async def set_default_role(ctx: Context):
 
 
 @command(
-    "removedefaultrole",
-    permissions=[permission.ADMIN],
+    "RemoveDefaultRole",
+    modules=[CommandModule.NEWUSER, CommandModule.DEFAULTROLE],
+    permissions=[Permission.ADMIN],
     description="Removes the role applied to users who joins the server."
 )
 async def remove_default_role(ctx: Context):
@@ -59,10 +65,11 @@ async def remove_default_role(ctx: Context):
 
 
 @command(
-    "setwelcomemessage",
-    permissions=[permission.ADMIN],
+    "SetWelcomeMessage",
+    modules=[CommandModule.NEWUSER, CommandModule.WELCOMEMESSAGE],
+    permissions=[Permission.ADMIN],
     description="Sets the message sent when a new user joins the server.\nUse ¤name¤ to mention thenew user.\nThe message is everything within the \"_\", including line shifts.",
-    usage="setwelcomemessage <#channel-to-send-the-message-in> \"<The message to be sent>\""
+    usage="#channel-to-send-the-message-in \"The message to be sent\""
 )
 async def set_welcome_message(ctx: Context):
     if not ctx.command.args or len(ctx.command.args) != 2:
@@ -82,8 +89,9 @@ async def set_welcome_message(ctx: Context):
 
 
 @command(
-    "removewelcomemessage",
-    permissions=[permission.ADMIN],
+    "RemoveWelcomeMessage",
+    modules=[CommandModule.NEWUSER, CommandModule.WELCOMEMESSAGE],
+    permissions=[Permission.ADMIN],
     description="Removes the welcome message for the server."
 )
 async def remove_welcome_message(ctx: Context):
