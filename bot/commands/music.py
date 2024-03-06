@@ -52,7 +52,7 @@ async def play(ctx: Context):
             msg = "No songs found. Try changing the search phrase."
         elif results.load_type == LoadType.ERROR:
             msg = "An error occured :("
-            log_msg = results.error.message + "---" + results.error.cause
+            log_msg = results.error.cause
         raise CommandError(msg, log=(f"Error occured: {log_msg}" if log_msg else None))
 
     await ctx.channel.send(embed=embed)

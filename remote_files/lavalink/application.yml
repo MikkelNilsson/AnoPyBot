@@ -6,8 +6,8 @@ plugins:
 #    another_key: another_value
 lavalink:
   plugins:
-#    - dependency: "group:artifact:version"
-#      repository: "repository"
+  #  - dependency: "group:artifact:version"
+  #    repository: "repository"
   pluginsDir: "./plugins"
   server:
     sources:
