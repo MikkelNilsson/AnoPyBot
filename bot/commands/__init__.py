@@ -89,69 +89,87 @@ def command(
     return decorator_function
 
 
-async def exec(message: discord.Message):
+async def check_for_command(message: discord.Message) -> tuple[Command, Context]:
+    # Check for the correct prefix
     if message.guild:
         prefix = crud.get_command_prefix_or_initiate(message.guild.id)
     else:
         prefix = "!"
 
-    cmd_message = (prefix + message.content[1:] if message.content.lower().startswith("!help") else message.content).strip()
-    # Check if message is a command
+    # Make it lower case and remove prefixed or trailing whitespaces
+    cmd_message = message.content.lower().strip()
+
+    # Ensure that the !help command will always go through, even if the prefix is not "!"
+    # It basically just replaces the "!" with the actual prefix of the message.
+    if message.content.startswith("!help"):
+        cmd_message = prefix + message.content[1:]
+
+    # check that the message is actually a command.
     if cmd_message.startswith(prefix):
+        # Find the command
+        command = handler.get_command(
+            cmd_message[len(prefix):].split(" ", 1)[0]
+        )
 
-        # Get command and args
-        no_prefix_message = cmd_message[len(prefix):]
-        cmd = no_prefix_message.split(" ", 1)[0]
-        command: Command = handler.get_command(cmd.lower())
-
-        # Check if command exists
-        if command:
-            ctx: Context = Context(message, no_prefix_message, cmd, handler.bot)
-
-            try:
-                if command.in_guild and not ctx.in_guild():
-                    raise CommandError("Command has to be executed in a server!")
-
-                # Check if user has permission to use command
-                if not has_permission(command_permissions=command.permissions, author=message.author):
-                    raise CommandPermissionError()
-
-                logger.info(
-                    "Executing: " +
-                    ctx.command.command +
-                    ' with args: "' +
-                    ctx.command.rest +
-                    '" for ' +
-                    ctx.author.name
-                )
-
-                # Pre command hook
-                if command.pre_hook:
-                    await command.pre_hook(ctx)
-                # Execute command
-                res = await command.method(ctx)
-
-                # post command hook
-                if command.post_hook:
-                    await command.post_hook(ctx, res)
-
-                if res:
-                    print(res)
-
-            except CommandUsageError as cmderr:
-                if cmderr.log:
-                    logger.warning(cmderr.log)
-                await message.reply(
-                    (cmderr.message + "\n" if cmderr.message else "") +
-                    f"Usage: `{prefix}{command.usage_str()}`"
-                )
-            except CommandError as cmderr:
-                if cmderr.log:
-                    logger.warning(cmderr.log)
-                await message.reply(cmderr.message)
-
-        else:
+        # Command not found
+        if not command:
             await message.reply("Command not found")
+            return (None, None)
+
+        context = Context(
+            message,
+            prefix,
+            command.name.lower(),
+            handler.bot
+        )
+
+        return (command, context)
+
+
+async def exec(message: discord.Message):
+
+    (command, ctx) = await check_for_command(message)
+
+    if not command:
+        return
+
+    try:
+        # ----- Checks -----
+        if command.in_guild and not ctx.in_guild():
+            raise CommandError("Command has to be executed in a server!")
+
+        # Check if user has permission to use command
+        if not has_permission(command_permissions=command.permissions, author=message.author):
+            raise CommandPermissionError()
+
+        # ----- Logging -----
+        logger.info(
+            f"Executing: {ctx.command.command} with args: \"{ctx.command.rest}\" for {ctx.author.name}"
+        )
+
+        # ----- Executing -----
+        # Pre command hook
+        if command.pre_hook:
+            await command.pre_hook(ctx)
+
+        # Execute command
+        res = await command.method(ctx)
+
+        # post command hook
+        if command.post_hook:
+            await command.post_hook(ctx, res)
+
+    except CommandUsageError as cmderr:
+        if cmderr.log:
+            logger.warning(cmderr.log)
+        await message.reply(
+            (cmderr.message + "\n" if cmderr.message else "") +
+            f"Usage: `{ctx.command.prefix}{command.usage_str()}`"
+        )
+    except CommandError as cmderr:
+        if cmderr.log:
+            logger.warning(cmderr.log)
+        await message.reply(cmderr.message)
 
 
 def has_permission(command_permissions: list[Permission], author: discord.Member | discord.User):

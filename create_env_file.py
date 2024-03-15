@@ -1,7 +1,5 @@
 import os
 
-environ = {"anobot_HI": "hello", "WTF": "NO", "anobot_YAAAY": "yes"}
-
 file_content = []
 for var in filter(lambda x : x.lower().startswith("anobot_"), os.environ.keys()):
     value = os.getenv(var)

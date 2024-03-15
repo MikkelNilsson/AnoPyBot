@@ -83,15 +83,21 @@ class Command():
 pattern = r"(\"[^\"]*\"|[^ ]+)"
 class ContextCommand():
     command: str
+    called_command: str
     rest: str
     args: list[str]
 
-    def __init__(self, np_message: str, command: str) -> None:
+    def __init__(self, msg: discord.Message, prefix: str, command: str) -> None:
+        # get content of the message
+        content = msg.content[len(prefix):]
+
         self.command = command
-        self.content = np_message.strip()
-        self.args = re.findall(pattern, np_message[len(command) + 1:].strip())
+        self.called_command = content.split(" ", 1)[0]
+        self.content = content
+        self.prefix = prefix
+        self.args = re.findall(pattern, content[len(self.called_command) + 1:].strip())
         self.rest = (
-            np_message.strip().split(" ", 1)[1]
+            content.strip().split(" ", 1)[1]
             if len(self.args) > 0
             else ""
         )
@@ -106,8 +112,8 @@ class Context():
     message: discord.Message
     bot: discord.Client
 
-    def __init__(self, msg: discord.Message, np_message: str, command: str, client: discord.Client):
-        self.command = ContextCommand(np_message, command)
+    def __init__(self, msg: discord.Message, prefix: str, command: str, client: discord.Client):
+        self.command = ContextCommand(msg, prefix, command)
         self.guild = msg.guild
         self.channel = msg.channel
         self.author = msg.author

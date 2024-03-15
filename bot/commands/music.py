@@ -30,7 +30,7 @@ async def play(ctx: Context):
     results = await player.node.get_tracks(query)
 
     embed = discord.Embed(color=discord.Color.from_rgb(255, 255, 255))
-
+    logger.info(results.load_type)
     if results.load_type == LoadType.PLAYLIST:
         tracks = results.tracks
 

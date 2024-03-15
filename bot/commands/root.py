@@ -18,6 +18,8 @@ async def debug(ctx: Context):
     message = (
         f"Debug:\n**Full Command**: \"{ctx.command.content}\"\n" +
         f"**Command**: \"{ctx.command.command}\"\n" +
+        f"**Prefix**: \"{ctx.command.prefix}\"\n" +
+        f"**Actual Command**: \"{ctx.command.called_command}\"\n" +
         f"**Arguments**: \"{ctx.command.rest}\"\n" +
         f"**List of arguments**: \"{args_list}\"\n" +
         f"**Command Author name**: \"{ctx.author.name}\"\n"
