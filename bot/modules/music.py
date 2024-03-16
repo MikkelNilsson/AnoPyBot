@@ -17,7 +17,7 @@ async def ensure_voice(ctx: Context):
     # if it is already there, it will return the existing
     player: lavalink.DefaultPlayer = lavaClient.player_manager.create(ctx.guild.id)
 
-    should_connect = ctx.command.command in ('play', 'p')
+    should_connect = ctx.command.command in ('play')
 
     if not ctx.author.voice or not ctx.author.voice.channel:
         if should_connect:
@@ -35,7 +35,11 @@ async def ensure_voice(ctx: Context):
         player.store("channel", ctx.channel.id)
         await ctx.author.voice.channel.connect(cls=LavalinkVoiceClient)
     else:
-        if v_client.channel.id != ctx.author.voice.channel.id:
+        if (
+            not ctx.author.voice or
+            not ctx.author.voice.channel
+            or v_client.channel.id != ctx.author.voice.channel.id
+        ):
             raise CommandError('You need to be in my Voicechannel.')
 
 
