@@ -35,7 +35,11 @@ async def ensure_voice(ctx: Context):
         player.store("channel", ctx.channel.id)
         await ctx.author.voice.channel.connect(cls=LavalinkVoiceClient)
     else:
-        if v_client.channel.id != ctx.author.voice.channel.id:
+        if (
+            not ctx.author.voice or
+            not ctx.author.voice.channel
+            or v_client.channel.id != ctx.author.voice.channel.id
+        ):
             raise CommandError('You need to be in my Voicechannel.')
 
 
