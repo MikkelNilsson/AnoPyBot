@@ -127,7 +127,6 @@ async def check_for_command(message: discord.Message) -> tuple[Command, Context]
 
 
 async def exec(message: discord.Message):
-
     (command, ctx) = await check_for_command(message)
 
     if not command:

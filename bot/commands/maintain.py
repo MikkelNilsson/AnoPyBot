@@ -38,8 +38,8 @@ async def debug(ctx: Context):
 )
 async def activeMusic(ctx: Context):
     guilds = []
-    for id in music.lavaClient.players.keys():
-        guild = ctx.bot.get_guild(id)
+    for player in music.lavaClient.player_manager.find_all(lambda player: player.channel_id):
+        guild = ctx.bot.get_guild(player.guild_id)
         if guild:
             guilds.append(guild.name)
 
