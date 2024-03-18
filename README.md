@@ -1,7 +1,7 @@
 # AnoPy - A discord bot
 
 This bot is a project for me to learn more about python.
-Get the bot for your server [here](https://discord.com/api/oauth2/authorize?client_id=1062042796871135282&permissions=3213376&scope=bot).
+Get the bot for your server [here](https://discord.com/oauth2/authorize?client_id=575320025410437131).
 
 Plans:
 - Create alias command !alias <alias_name>=<command> <command arguments> {maybe multiline}
