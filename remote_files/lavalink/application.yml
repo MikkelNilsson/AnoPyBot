@@ -4,14 +4,17 @@ plugins:
 #  name: # Name of the plugin
 #    some_key: some_value # Some key-value pair for the plugin
 #    another_key: another_value
+  youtube:
+    enabled: true
+    clients: ["MUSIC", "ANDROID", "WEB"]
 lavalink:
   plugins:
-  #  - dependency: "group:artifact:version"
-  #    repository: "repository"
+    - dependency: "com.github.lavalink-devs.lavaplayer-youtube-source:plugin:1.0.7"
+      repository: "https://jitpack.io"
   pluginsDir: "./plugins"
   server:
     sources:
-      youtube: true
+      youtube: false
       bandcamp: true
       soundcloud: true
       twitch: true

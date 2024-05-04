@@ -130,6 +130,8 @@ class Lava_Hook:
             await self.queue_end(event)
         elif isinstance(event, lavalink.events.TrackStartEvent):
             await self.track_start(event)
+        elif isinstance(event, lavalink.events.TrackExceptionEvent):
+            self.track_exception(event)
 
 
     async def queue_end(self, event: lavalink.events.QueueEndEvent):
@@ -143,6 +145,9 @@ class Lava_Hook:
         await get_text_channel(event.player, self.bot.get_guild(event.player.guild_id)).send(
             'Now playing: ' + event.track.title + '\n' + event.track.uri
         )
+
+    def track_exception(self, event: lavalink.events.TrackExceptionEvent):
+        logger.warning("TRACK EXCEPTION: MESSAGE: " + event.message)
 
 
 def get_text_channel(player: lavalink.DefaultPlayer, guild: discord.Guild):
