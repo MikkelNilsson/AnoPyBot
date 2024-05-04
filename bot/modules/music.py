@@ -142,6 +142,21 @@ class Lava_Hook:
         await guild.voice_client.disconnect(force=True)
 
     async def track_start(self, event: lavalink.events.TrackStartEvent):
+        guild = self.bot.get_guild(event.player.guild_id)
+        channel: discord.VoiceChannel = guild.get_channel(event.player.channel_id)
+        if isinstance(channel, discord.VoiceChannel):
+            should_disconnect = True
+            for id in channel.voice_states.keys():
+                if id != self.bot.user.id:
+                    should_disconnect = False
+                    break
+            if should_disconnect:
+                player: lavalink.DefaultPlayer = event.player
+                await get_text_channel(player, guild).send('No one is listening, so bye bye')
+                await player.stop()
+                await guild.voice_client.disconnect(force=True)
+                return None
+
         await get_text_channel(event.player, self.bot.get_guild(event.player.guild_id)).send(
             'Now playing: ' + event.track.title + '\n' + event.track.uri
         )
