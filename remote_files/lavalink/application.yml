@@ -6,11 +6,11 @@ plugins:
 #    another_key: another_value
   youtube:
     enabled: true
-    clients: ["MUSIC", "ANDROID", "WEB"]
+    clients: ["MUSIC", "ANDROID", "WEB", "TVHTML5EMBEDDED"]
 lavalink:
   plugins:
-    - dependency: "com.github.lavalink-devs.lavaplayer-youtube-source:plugin:1.0.7"
-      repository: "https://jitpack.io"
+    - dependency: "dev.lavalink.youtube:youtube-plugin:1.5.0"
+      snapshot: false # Set to true if you want to use a snapshot version.
   pluginsDir: "./plugins"
   server:
     sources:
