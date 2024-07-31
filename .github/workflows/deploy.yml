@@ -66,6 +66,11 @@ jobs:
           anobot_LAVALINK_PASSWORD: ${{ secrets.LAVALINK_PASSWORD }}
           anobot_YOUTUBE_EMAIL: ${{ secrets.YOUTUBE_EMAIL }}
           anobot_YOUTUBE_PASSWORD: ${{ secrets.YOUTUBE_PASSWORD }}
+          anobot_LAVALINK_IP_BLOCKS: ${{ secrets.LAVALINK_IP_BLOCKS }}
+          anobot_LAVALINK_EXCLUDE_IPS: ${{ secrets.LAVALINK_EXCLUDE_IPS }}
+          anobot_LAVALINK_STRATEGY: ${{ secrets.LAVALINK_STRATEGY }}
+          anobot_LAVALINK_SEARCH_TRIGGERS_FAIL: ${{ secrets.LAVALINK_SEARCH_TRIGGERS_FAIL }}
+          anobot_LAVALINK_RETRY_LIMIT: ${{ secrets.LAVALINK_RETRY_LIMIT }}
           ENV_LOCATION: "/AnoPyBot/"
 
       - name: Copy remote_files directory to server
