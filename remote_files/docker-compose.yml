@@ -16,10 +16,9 @@ services:
     depends_on:
       - lavalink
       - db
-    networks:
-      - lavalink
     volumes:
       - ${LOG_MOUNT_LOCATION}:/app/logs
+    network_mode: "host"
 
   lavalink:
     image: ghcr.io/lavalink-devs/lavalink:4 # pin the image version to Lavalink v4
@@ -40,8 +39,7 @@ services:
       - ${LAVALINK_PORT}:${LAVALINK_PORT}
     volumes:
       - ./lavalink/application.yml:/opt/Lavalink/application.yml # mount application.yml from the same directory or use environment variables
-    networks:
-      - lavalink
+    network_mode: "host"
 
   db:
     image: postgres:15-bullseye
@@ -54,10 +52,4 @@ services:
       - 6543:${POSTGRES_PORT}
     volumes:
       - ${POSTGRES_DATA_MOUNT_LOCATION}:/var/lib/postgresql/data
-    networks:
-      - lavalink
-
-networks:
-  lavalink:
-    # create a lavalink network you can add other containers to, to give them access to Lavalink
-    name: lavalink
+    network_mode: "host"
