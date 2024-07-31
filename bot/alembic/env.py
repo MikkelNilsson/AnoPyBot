@@ -30,7 +30,7 @@ target_metadata = Base.metadata
 
 import os
 
-url = "postgresql+psycopg2://{user}:{password}@db:{port}/{database}".format(
+url = "postgresql+psycopg2://{user}:{password}@0.0.0.0:{port}/{database}".format(
     user=os.environ["POSTGRES_USER"],
     password=os.environ["POSTGRES_PASSWORD"],
     database=os.environ["POSTGRES_DB"],

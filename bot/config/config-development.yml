@@ -7,4 +7,4 @@ bot:
     owners: [
         215044487871725573
     ]
-connection-string: 'postgresql+psycopg2://{user}:{password}@db:{port}/{database}'
+connection-string: 'postgresql+psycopg2://{user}:{password}@0.0.0.0:{port}/{database}'

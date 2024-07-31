@@ -172,7 +172,7 @@ def setup(client: discord.Client):
     global lavaClient
     lavaClient = lavalink.Client(client.user.id)
     lavaClient.add_node(
-        'lavalink',
+        '0.0.0.0',
         int(os.getenv("LAVALINK_PORT", 2333)),
         os.getenv("LAVALINK_PASSWORD", 'youshallnotpass'),
         'eu',
