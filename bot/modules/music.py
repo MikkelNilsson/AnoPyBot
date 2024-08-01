@@ -14,6 +14,12 @@ def get_player(ctx: Context) -> lavalink.DefaultPlayer:
 async def ensure_voice(ctx: Context):
     """ This check ensures that the bot and command author are in the same Voicechannel. """
 
+    try:
+        if (ctx.bot.config["is_prod"]):
+            raise CommandError("Sorry, musiken er død for nu...")
+    except:
+        pass
+
     # if it is already there, it will return the existing
     player: lavalink.DefaultPlayer = lavaClient.player_manager.create(ctx.guild.id)
 

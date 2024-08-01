@@ -5,3 +5,7 @@ __pycache__
 logs
 db-data
 testing-mnt
+temp-running
+*.token
+run-local.bat
+stop-local.bat
