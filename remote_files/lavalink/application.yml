@@ -12,8 +12,8 @@ plugins:
     clients: ["MUSIC", "ANDROID_TESTSUITE", "WEB", "TVHTML5EMBEDDED"]
 lavalink:
   plugins:
-    - dependency: "dev.lavalink.youtube:youtube-plugin:c0bfb37547af8cd61cdb7894efdf0d26c901073a"
-      snapshot: true # Set to true if you want to use a snapshot version.
+    - dependency: "dev.lavalink.youtube:youtube-plugin:1.5.1"
+      snapshot: false # Set to true if you want to use a snapshot version.
   pluginsDir: "./plugins"
   server:
     sources:
